@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ZincBorrow | Global Wealth</title>
+  <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css?v=6">
+</head>
+
+<body>
+  <div class="parallax">
+    <!-- Simple Logo (Fixed or absolute) -->
+    <div
+      style="position: absolute; top: 2rem; left: 0; width: 100%; text-align: center; z-index: 100; color: #fff; font-family: 'Satoshi', sans-serif; font-weight: 700; font-size: 1.2rem; letter-spacing: 2px; display: flex; justify-content: center; align-items: center; gap: 8px;">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 12L12 22L22 12L12 2Z" fill="white" />
+        <path d="M12 6L6 12L12 18L18 12L12 6Z" fill="#111" />
+      </svg>
+      ZINC
+    </div>
+    <section class="parallax__header">
+      <div class="parallax__visuals">
+        <div data-parallax-layers class="parallax__layers">
+          <!-- Background (Layer 1) -->
+          <video src="assets/videos/Dreamy Soft Clouds.mp4" autoplay loop muted playsinline data-parallax-layer="1" class="parallax__layer-img"></video>
+
+          <!-- Animated Birds Sprite Sheet (Layer 1.5) -->
+          <div data-parallax-layer="1.5" class="birds-parallax-wrapper">
+             <div class="bird-container bird-container-one"><div class="bird bird-one"></div></div>        
+             <div class="bird-container bird-container-two"><div class="bird bird-two"></div></div>  
+             <div class="bird-container bird-container-three"><div class="bird bird-three"></div></div> 
+             <div class="bird-container bird-container-four"><div class="bird bird-four"></div></div>
+             <div class="bird-container bird-container-five"><div class="bird bird-five"></div></div>
+             <div class="bird-container bird-container-six"><div class="bird bird-six"></div></div>
+             <div class="bird-container bird-container-seven"><div class="bird bird-seven"></div></div>
+             <div class="bird-container bird-container-eight"><div class="bird bird-eight"></div></div>
+          </div>
+
+          <!-- Middle ground -->
+          <img src="assets/images/middle-layer.png" loading="eager" width="800" data-parallax-layer="2" alt=""
+            class="parallax__layer-img">
+
+          <!-- Text Content -->
+          <div data-parallax-layer="3" class="parallax__layer-title">
+            <div class="hero-text-container">
+              <h1 class="parallax__title">Where your <i>global<br>wealth</i> belongs</h1>
+              <p class="parallax__subtitle">For founders, builders, product leaders, and technology<br>professionals
+                whose wealth crossed borders</p>
+            </div>
+          </div>
+
+          <!-- Foreground -->
+          <img src="assets/images/top-layer.png" loading="eager" width="800" data-parallax-layer="4" alt=""
+            class="parallax__layer-img">
+        </div>
+      </div>
+    </section>
+
+    <section class="second-fold">
+      <div class="content-container">
+        <h2>Your wealth should help<br>you <i>live better</i></h2>
+
+        <div class="paragraphs">
+          <p>You built your wealth through ownership—RSUs, global equity and investments, not just income. Your wealth
+            does not live in one place. Yet when life presents an opportunity, accessing your own wealth often means
+            making difficult trade-offs: selling long-term investments, paying unnecessary taxes, or navigating
+            fragmented financial systems.</p>
+          <p>There is a better way. One where smarter financial decisions let you keep building your future while making
+            the most of today.</p>
+        </div>
+
+        <a href="#" class="cta-button">I'm interested</a>
+      </div>
+    </section>
+  </div>
+
+  <section id="liquid-root" class="video-sequence" style="position: relative; height: 100vh; overflow: hidden; background: #000;">
+    <!-- Videos as sibling backgrounds -->
+    <video class="bg-vid vid-1" src="assets/videos/01_scrub.mp4" muted playsinline preload="auto"></video>
+    <video class="bg-vid vid-2" src="assets/videos/02_scrub.mp4" muted playsinline preload="auto"></video>
+    <video class="bg-vid vid-3" src="assets/videos/03_scrub.mp4" muted playsinline preload="auto"></video>
+    <video class="bg-vid vid-4" src="assets/videos/04_scrub.mp4" muted playsinline preload="auto"></video>
+    <video class="bg-vid vid-5" src="assets/videos/05_scrub.mp4" muted playsinline preload="auto"></video>
+
+    <!-- Glass Circles -->
+    <div class="glass-circle circle-1">
+      <h2>There’s a different<br>way to think<br>about wealth</h2>
+      <p>Scroll to reveal</p>
+    </div>
+    <div class="glass-circle circle-2">
+      <h2>Leverage instead<br>of liquidation</h2>
+      <p>Access capital without selling the<br>assets you believe in</p>
+    </div>
+    <div class="glass-circle circle-3">
+      <h2>Opportunity instead<br>of compromise</h2>
+      <p>Make life’s biggest decisions without<br>interrupting years of compounding</p>
+    </div>
+    <div class="glass-circle circle-4">
+      <h2>Clarity instead<br>of complexity</h2>
+      <p>Bring your global financial life together<br>and make decisions with confidence</p>
+    </div>
+    <div class="glass-circle circle-5">
+      <h2>Wealth that works<br>for your life</h2>
+      <p>That's the future we're building.</p>
+    </div>
+  </section>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/gsap.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.5/dist/ScrollTrigger.min.js"></script>
+  <script src="https://unpkg.com/lenis@1.1.14/dist/lenis.min.js"></script>
+  <script>
+  // Register GSAP Plugins
+  gsap.registerPlugin(ScrollTrigger);
+  
+  // Parallax Layers
+  document.querySelectorAll('[data-parallax-layers]').forEach((triggerElement) => {
+    let tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: triggerElement,
+        start: "0% 0%",
+        end: "100% 0%",
+        scrub: 0
+      }
+    });
+    const layers = [
+      { layer: "1", yPercent: 70 },
+      { layer: "2", yPercent: 55 },
+      { layer: "3", yPercent: 40 },
+      { layer: "4", yPercent: 0 }
+    ];
+    layers.forEach((layerObj, idx) => {
+      tl.to(
+        triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
+        {
+          yPercent: layerObj.yPercent,
+          ease: "none"
+        },
+        idx === 0 ? undefined : "<"
+      );
+    });
+  });
+  
+  // Liquid Glass & Tunnel Sequence
+  (async function initLiquidGlass() {
+    const root = document.querySelector('#liquid-root');
+    const glassElements = document.querySelectorAll('#liquid-root .glass-circle');
+    
+    if (root && glassElements.length > 0) {
+      // Set config for each glass circle
+      glassElements.forEach(el => {
+        el.dataset.config = JSON.stringify({
+          blurAmount: 0.15,
+          refraction: 0.8,
+          chromAberration: 0.1,
+          cornerRadius: 200, 
+          opacity: 0.85,
+          distortion: 0.0,
+          edgeHighlight: 0.2,
+          fresnel: 1.0,
+          shadowOpacity: 0.0
+        });
+      });
+
+      // Load LiquidGlass dynamically to avoid CORS issues if opened directly from filesystem
+      const module = await import('https://cdn.jsdelivr.net/npm/@ybouane/liquidglass/dist/index.js');
+      const LiquidGlass = module.LiquidGlass;
+
+      // Initialize liquid glass
+      await LiquidGlass.init({
+        root: root,
+        glassElements: glassElements,
+      });
+
+      const totalSections = 5;
+      const masterTl = gsap.timeline({
+        scrollTrigger: {
+          trigger: "#liquid-root",
+          start: "top top",
+          end: "+=2500%", // Longer pin to accommodate the separated sequences
+          scrub: 1, // Smooth scrubbing
+          pin: true
+        }
+      });
+
+      // 1. Setup Video Scrubbing using Intra-Frame Videos & RAF Lerping
+      let targetTimes = [0, 0, 0, 0, 0];
+      for (let j = 1; j <= totalSections; j++) {
+        const vidEl = document.querySelector(`.vid-${j}`);
+        if (vidEl) {
+          vidEl.pause();
+          const proxy = { progress: 0 };
+          
+          let startTime = (j === 1) ? 0 : (j - 2) * 4 + 2;
+          let endTime = (j === totalSections) ? 17 : (j - 1) * 4 + 3;
+          let duration = endTime - startTime;
+          
+          masterTl.to(proxy, {
+            progress: 1,
+            duration: duration,
+            ease: "none",
+            onUpdate: () => {
+              if (!isNaN(vidEl.duration)) {
+                targetTimes[j - 1] = vidEl.duration * proxy.progress;
+              }
+            }
+          }, startTime);
+        }
+      }
+
+      // Smooth Lerp loop for video scrubbing
+      function renderVideoScrub() {
+        for (let j = 1; j <= totalSections; j++) {
+          const vidEl = document.querySelector(`.vid-${j}`);
+          if (vidEl && !isNaN(vidEl.duration)) {
+            // Lerp towards target time
+            const diff = targetTimes[j - 1] - vidEl.currentTime;
+            if (Math.abs(diff) > 0.01) {
+              vidEl.currentTime += diff * 0.15; // Smooth interpolation
+            }
+          }
+        }
+        requestAnimationFrame(renderVideoScrub);
+      }
+      renderVideoScrub();
+
+      // 2. Setup the Rhythmic Transitions (Circle Out -> Video Focus -> Circle In)
+      for (let i = 1; i < totalSections; i++) {
+        const currentVid = `.vid-${i}`;
+        const nextVid = `.vid-${i + 1}`;
+        const currentCircle = `.circle-${i}`;
+        const nextCircle = `.circle-${i + 1}`;
+        
+        const t = (i - 1) * 4;
+        
+        // Time t to t+1: The circle rests so the user can read the text. (No animation here, it just stays at scale 1)
+        
+        // Time t+1 to t+2: Tunnel Out current circle
+        masterTl.to(`${currentCircle} h2, ${currentCircle} p`, { 
+          autoAlpha: 0, 
+          duration: 0.3, 
+          ease: "power1.inOut" 
+        }, t + 1);
+
+        masterTl.to(currentCircle, { 
+          scale: 6, // Reduced from 15 to 6 to save massive GPU WebGL rendering cost while still covering screen
+          autoAlpha: 0, 
+          duration: 1,
+          ease: "power2.inOut"
+        }, t + 1);
+
+        // Time t+2 to t+3: Pure Video Crossfade (No circles on screen!)
+        // Using autoAlpha instead of opacity completely hides the inactive videos from LiquidGlass canvas processing
+        masterTl.to(currentVid, { autoAlpha: 0, duration: 1, ease: "none" }, t + 2);
+        masterTl.to(nextVid, { autoAlpha: 1, duration: 1, ease: "none" }, t + 2);
+        
+        // Time t+3 to t+4: Tunnel In next circle
+        masterTl.fromTo(nextCircle, 
+          { scale: 0.1, autoAlpha: 0 },
+          { scale: 1, autoAlpha: 1, duration: 1, ease: "power2.out" }, 
+          t + 3 
+        );
+      }
+      
+      // Time 16 to 17: Final rest for circle-5 is naturally built into the timeline length (17)
+    }
+  })();
+
+  /* Lenis */
+  const lenis = new Lenis();
+  lenis.on('scroll', ScrollTrigger.update);
+  gsap.ticker.add((time) => {lenis.raf(time * 1000);});
+  gsap.ticker.lagSmoothing(0);
+  </script>
+</body>
+
+</html>
