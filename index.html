@@ -151,9 +151,26 @@
   (async function initLiquidGlass() {
     const root = document.querySelector('#liquid-root');
     const glassElements = document.querySelectorAll('#liquid-root .glass-circle');
-    
+
     if (root && glassElements.length > 0) {
       const totalSections = 5;
+
+      // Entrance animation for circle-1 as the section scrolls into view.
+      // Uses a self-contained tween (not scrubbed) so it commits final values reliably.
+      gsap.set('.circle-1', { scale: 0.6, autoAlpha: 0 });
+      gsap.set('.circle-1 h2', { y: 24, autoAlpha: 0 });
+      gsap.set('.circle-1 p', { y: 24, autoAlpha: 0 });
+      ScrollTrigger.create({
+        trigger: "#liquid-root",
+        start: "top 85%",
+        once: true,
+        onEnter: () => {
+          gsap.to('.circle-1', { scale: 1, autoAlpha: 1, duration: 0.9, ease: "power2.out" });
+          gsap.to('.circle-1 h2', { y: 0, autoAlpha: 1, duration: 0.7, delay: 0.2, ease: "power2.out" });
+          gsap.to('.circle-1 p', { y: 0, autoAlpha: 0.4, duration: 0.7, delay: 0.32, ease: "power2.out" });
+        }
+      });
+
       const masterTl = gsap.timeline({
         scrollTrigger: {
           trigger: "#liquid-root",
