@@ -24,9 +24,9 @@
       <div class="parallax__visuals">
         <div data-parallax-layers class="parallax__layers">
           <!-- Background (Layer 1) -->
-          <video autoplay loop muted playsinline data-parallax-layer="1" class="parallax__layer-img">
-            <source src="assets/videos/Dreamy Soft Clouds.webm" type="video/webm">
+          <video autoplay loop muted playsinline webkit-playsinline preload="auto" data-parallax-layer="1" class="parallax__layer-img">
             <source src="assets/videos/Dreamy Soft Clouds.mp4" type="video/mp4">
+            <source src="assets/videos/Dreamy Soft Clouds.webm" type="video/webm">
           </video>
 
           <!-- Animated Birds Sprite Sheet (Layer 1.5) -->
@@ -81,11 +81,11 @@
 
   <section id="liquid-root" class="video-sequence" style="position: relative; height: 100vh; overflow: hidden; background: #000;">
     <!-- Videos as sibling backgrounds. First video preloads eagerly; others load metadata only until near-active -->
-    <video class="bg-vid vid-1" src="assets/videos/01_scrub.mp4" muted playsinline webkit-playsinline preload="auto" disableRemotePlayback></video>
-    <video class="bg-vid vid-2" src="assets/videos/02_scrub.mp4" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
-    <video class="bg-vid vid-3" src="assets/videos/03_scrub.mp4" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
-    <video class="bg-vid vid-4" src="assets/videos/04_scrub.mp4" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
-    <video class="bg-vid vid-5" src="assets/videos/05_scrub.mp4" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
+    <video class="bg-vid vid-1" src="assets/videos/01_scrub.mp4" poster="assets/posters/01_scrub.jpg" muted playsinline webkit-playsinline preload="auto" disableRemotePlayback></video>
+    <video class="bg-vid vid-2" src="assets/videos/02_scrub.mp4" poster="assets/posters/02_scrub.jpg" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
+    <video class="bg-vid vid-3" src="assets/videos/03_scrub.mp4" poster="assets/posters/03_scrub.jpg" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
+    <video class="bg-vid vid-4" src="assets/videos/04_scrub.mp4" poster="assets/posters/04_scrub.jpg" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
+    <video class="bg-vid vid-5" src="assets/videos/05_scrub.mp4" poster="assets/posters/05_scrub.jpg" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
 
     <!-- Glass Circles -->
     <div class="glass-circle circle-1">
