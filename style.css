@@ -466,9 +466,9 @@ body, html {
     padding: 3rem 1.25rem 5rem 1.25rem;
   }
   .second-fold h2 {
-    font-size: clamp(2rem, 9vw, 2.75rem);
+    font-size: 36px;
     letter-spacing: -2px;
-    margin: 0 0 2.5rem 0;
+    margin: 0 0 1rem 0;
   }
   .paragraphs p {
     font-size: 1rem;
@@ -476,18 +476,18 @@ body, html {
     margin-bottom: 1.5rem;
   }
 
-  /* Glass circle: fit portrait viewport.
+  /* Glass circle: fit portrait viewport with breathing room on the sides.
      Keep margin-based centering because GSAP animates transform. */
   .glass-circle {
-    width: 88vw;
-    height: 88vw;
-    margin-top: -44vw;
-    margin-left: -44vw;
-    padding: 8vw;
+    width: 76vw;
+    height: 76vw;
+    margin-top: -38vw;
+    margin-left: -38vw;
+    padding: 6vw;
   }
 
   .glass-circle h2 {
-    font-size: clamp(1.5rem, 6vw, 2rem);
+    font-size: 28px;
   }
 
   .glass-circle p {
