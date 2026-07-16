@@ -81,11 +81,11 @@
 
   <section id="liquid-root" class="video-sequence" style="position: relative; height: 100vh; overflow: hidden; background: #000;">
     <!-- Videos as sibling backgrounds. First video preloads eagerly; others load metadata only until near-active -->
-    <video class="bg-vid vid-1" src="assets/videos/01_scrub.mp4" muted playsinline preload="auto"></video>
-    <video class="bg-vid vid-2" src="assets/videos/02_scrub.mp4" muted playsinline preload="metadata"></video>
-    <video class="bg-vid vid-3" src="assets/videos/03_scrub.mp4" muted playsinline preload="metadata"></video>
-    <video class="bg-vid vid-4" src="assets/videos/04_scrub.mp4" muted playsinline preload="metadata"></video>
-    <video class="bg-vid vid-5" src="assets/videos/05_scrub.mp4" muted playsinline preload="metadata"></video>
+    <video class="bg-vid vid-1" src="assets/videos/01_scrub.mp4" muted playsinline webkit-playsinline preload="auto" disableRemotePlayback></video>
+    <video class="bg-vid vid-2" src="assets/videos/02_scrub.mp4" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
+    <video class="bg-vid vid-3" src="assets/videos/03_scrub.mp4" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
+    <video class="bg-vid vid-4" src="assets/videos/04_scrub.mp4" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
+    <video class="bg-vid vid-5" src="assets/videos/05_scrub.mp4" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
 
     <!-- Glass Circles -->
     <div class="glass-circle circle-1">
@@ -173,9 +173,19 @@
         vidEls.push(vidEl);
         if (vidEl) {
           vidEl.pause();
-          // Force the first frame to be drawn so the video shows something before scroll starts
+          // Force the first frame to render.
+          // iOS Safari won't decode until play() is called; then we immediately pause().
           if (j === 1) {
-            const drawFirstFrame = () => { vidEl.currentTime = 0.001; };
+            const drawFirstFrame = () => {
+              const p = vidEl.play();
+              if (p && typeof p.then === 'function') {
+                p.then(() => { vidEl.pause(); vidEl.currentTime = 0.001; })
+                 .catch(() => { vidEl.currentTime = 0.001; });
+              } else {
+                vidEl.pause();
+                vidEl.currentTime = 0.001;
+              }
+            };
             if (vidEl.readyState >= 2) drawFirstFrame();
             else vidEl.addEventListener('loadeddata', drawFirstFrame, { once: true });
           }
