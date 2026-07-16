@@ -1,6 +1,7 @@
 @font-face {
   font-family: 'Butler Pro';
   src: local('Butler Pro'), local('Butler');
+  font-display: swap;
 }
 
 :root {
@@ -223,47 +224,7 @@ body {
   z-index: 1;
 }
 
-.glass-circle {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 550px;
-  height: 550px;
-  border-radius: 50%;
-  box-sizing: border-box;
-  background: rgba(255, 255, 255, 0.05);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 2;
-  color: white;
-  text-align: center;
-  padding: 2rem;
-  opacity: 0;
-  visibility: hidden;
-  pointer-events: none;
-}
-
-.glass-circle h2 {
-  font-family: var(--font-serif);
-  font-weight: 400;
-  font-size: 2.5rem;
-  line-height: 1.1;
-  margin: 0 0 1rem 0;
-}
-
-.glass-circle p {
-  font-family: var(--font-sans);
-  font-size: 1rem;
-  font-weight: 300;
-  margin: 0;
-  opacity: 0.9;
-}
+/* .glass-circle rule merged with the one further down to avoid duplicate parsing */
 
 /* Birds Sprite Sheet Animation */
 .birds-parallax-wrapper {
@@ -377,7 +338,6 @@ body, html {
   opacity: 0;
   visibility: hidden;
   z-index: 10;
-  will-change: opacity, visibility;
 }
 
 #liquid-root .vid-1 { 
@@ -385,32 +345,33 @@ body, html {
   visibility: visible;
 }
 
-/* Glass Circles */
+/* Glass Circles — single consolidated rule */
 .glass-circle {
   position: absolute;
   top: 50%;
   left: 50%;
-  /* Notice we use fixed layout transforms so GSAP can modify them */
   margin-top: -200px;
   margin-left: -200px;
   width: 400px;
   height: 400px;
   border-radius: 50%;
-  
+  box-sizing: border-box;
+  background: rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
   display: flex;
   flex-direction: column;
   justify-content: center;
   align-items: center;
   text-align: center;
-  padding: 40px;
-  box-sizing: border-box;
-
   color: white;
+  padding: 40px;
   z-index: 20;
-  
-  /* Initial state: circle 1 visible, others hidden */
   opacity: 0;
   visibility: hidden;
+  pointer-events: none;
   will-change: transform, opacity;
 }
 
@@ -426,15 +387,19 @@ body, html {
 }
 
 .glass-circle h2 {
+  font-family: var(--font-serif);
   font-size: 2rem;
-  margin-bottom: 1rem;
   font-weight: 700;
+  line-height: 1.1;
+  margin: 0 0 1rem 0;
   text-shadow: 0 2px 10px rgba(0,0,0,0.5);
 }
 
 .glass-circle p {
+  font-family: var(--font-sans);
   font-size: 1.1rem;
-  opacity: 0.9;
   font-weight: 400;
+  margin: 0;
+  opacity: 0.9;
   text-shadow: 0 1px 5px rgba(0,0,0,0.5);
 }

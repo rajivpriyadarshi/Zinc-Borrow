@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=6">
+  <link rel="stylesheet" href="style.css?v=7">
 </head>
 
 <body>
@@ -77,12 +77,12 @@
   </div>
 
   <section id="liquid-root" class="video-sequence" style="position: relative; height: 100vh; overflow: hidden; background: #000;">
-    <!-- Videos as sibling backgrounds -->
+    <!-- Videos as sibling backgrounds. First video preloads eagerly; others load metadata only until near-active -->
     <video class="bg-vid vid-1" src="assets/videos/01_scrub.mp4" muted playsinline preload="auto"></video>
-    <video class="bg-vid vid-2" src="assets/videos/02_scrub.mp4" muted playsinline preload="auto"></video>
-    <video class="bg-vid vid-3" src="assets/videos/03_scrub.mp4" muted playsinline preload="auto"></video>
-    <video class="bg-vid vid-4" src="assets/videos/04_scrub.mp4" muted playsinline preload="auto"></video>
-    <video class="bg-vid vid-5" src="assets/videos/05_scrub.mp4" muted playsinline preload="auto"></video>
+    <video class="bg-vid vid-2" src="assets/videos/02_scrub.mp4" muted playsinline preload="metadata"></video>
+    <video class="bg-vid vid-3" src="assets/videos/03_scrub.mp4" muted playsinline preload="metadata"></video>
+    <video class="bg-vid vid-4" src="assets/videos/04_scrub.mp4" muted playsinline preload="metadata"></video>
+    <video class="bg-vid vid-5" src="assets/videos/05_scrub.mp4" muted playsinline preload="metadata"></video>
 
     <!-- Glass Circles -->
     <div class="glass-circle circle-1">
@@ -162,17 +162,20 @@
       });
 
       // 1. Setup Video Scrubbing using Intra-Frame Videos & RAF Lerping
+      // Cache video elements once (avoid re-querying every RAF tick)
+      const vidEls = [];
       let targetTimes = [0, 0, 0, 0, 0];
       for (let j = 1; j <= totalSections; j++) {
         const vidEl = document.querySelector(`.vid-${j}`);
+        vidEls.push(vidEl);
         if (vidEl) {
           vidEl.pause();
           const proxy = { progress: 0 };
-          
+
           let startTime = (j === 1) ? 0 : (j - 2) * 4 + 2;
           let endTime = (j === totalSections) ? 17 : (j - 1) * 4 + 3;
           let duration = endTime - startTime;
-          
+
           masterTl.to(proxy, {
             progress: 1,
             duration: duration,
@@ -181,20 +184,33 @@
               if (!isNaN(vidEl.duration)) {
                 targetTimes[j - 1] = vidEl.duration * proxy.progress;
               }
+              // Upgrade preload as this video's scrub window becomes active
+              if (proxy.progress > 0 && vidEl.preload !== "auto") {
+                vidEl.preload = "auto";
+                vidEl.load();
+              }
             }
           }, startTime);
         }
       }
 
-      // Smooth Lerp loop for video scrubbing
+      // Smooth Lerp loop — only scrub the currently active + neighbor videos.
+      // This avoids waking all 5 <video> decoders every frame.
+      function currentActiveIndex() {
+        // Timeline progress → seconds along the 17s master timeline
+        const tSec = masterTl.time();
+        // Section i covers [ (i-1)*4 - 0.5, (i-1)*4 + 3.5 ] roughly (rest + fade windows)
+        return Math.min(totalSections - 1, Math.max(0, Math.round(tSec / 4)));
+      }
       function renderVideoScrub() {
-        for (let j = 1; j <= totalSections; j++) {
-          const vidEl = document.querySelector(`.vid-${j}`);
+        const active = currentActiveIndex();
+        // Lerp active + immediate neighbors only (indices active-1, active, active+1)
+        for (let j = Math.max(0, active - 1); j <= Math.min(totalSections - 1, active + 1); j++) {
+          const vidEl = vidEls[j];
           if (vidEl && !isNaN(vidEl.duration)) {
-            // Lerp towards target time
-            const diff = targetTimes[j - 1] - vidEl.currentTime;
+            const diff = targetTimes[j] - vidEl.currentTime;
             if (Math.abs(diff) > 0.01) {
-              vidEl.currentTime += diff * 0.15; // Smooth interpolation
+              vidEl.currentTime += diff * 0.15;
             }
           }
         }
