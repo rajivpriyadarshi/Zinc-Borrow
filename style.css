@@ -1,5 +1,21 @@
+/* Butler Pro Display — self-hosted, all weights + italics */
+@font-face { font-family: 'Butler Pro'; font-style: normal; font-weight: 300; font-display: swap; src: url('assets/fonts/ButlerPro-Light-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: italic; font-weight: 300; font-display: swap; src: url('assets/fonts/ButlerPro-Light-Ital-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: normal; font-weight: 400; font-display: swap; src: url('assets/fonts/ButlerPro-Roman-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: italic; font-weight: 400; font-display: swap; src: url('assets/fonts/ButlerPro-Roman-Ital-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: normal; font-weight: 500; font-display: swap; src: url('assets/fonts/ButlerPro-Medium-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: italic; font-weight: 500; font-display: swap; src: url('assets/fonts/ButlerPro-Medium-Ital-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: normal; font-weight: 600; font-display: swap; src: url('assets/fonts/ButlerPro-SemiBold-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: italic; font-weight: 600; font-display: swap; src: url('assets/fonts/ButlerPro-SemiBold-Ital-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: normal; font-weight: 700; font-display: swap; src: url('assets/fonts/ButlerPro-Bold-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: italic; font-weight: 700; font-display: swap; src: url('assets/fonts/ButlerPro-Bold-Ital-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: normal; font-weight: 800; font-display: swap; src: url('assets/fonts/ButlerPro-ExtraBold-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: italic; font-weight: 800; font-display: swap; src: url('assets/fonts/ButlerPro-ExtraBold-Ital-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: normal; font-weight: 900; font-display: swap; src: url('assets/fonts/ButlerPro-Black-Ds.otf') format('opentype'); }
+@font-face { font-family: 'Butler Pro'; font-style: italic; font-weight: 900; font-display: swap; src: url('assets/fonts/ButlerPro-Black-Ital-Ds.otf') format('opentype'); }
+
 :root {
-  --font-serif: 'Butler', 'Butler Pro', 'Playfair Display', Georgia, serif;
+  --font-serif: 'Butler Pro', 'Playfair Display', Georgia, serif;
   --font-sans: 'Satoshi', system-ui, -apple-system, sans-serif;
   --color-text: #1a1a1a;
   --color-bg: #ffffff;
@@ -86,7 +102,8 @@ body {
 .parallax__title {
   font-family: var(--font-serif);
   font-size: clamp(3rem, 6vw, 5.5rem);
-  font-weight: 400;
+  font-weight: 300;
+  letter-spacing: -4px;
   line-height: 1.1;
   margin: 0 0 1rem 0;
   text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.3);
@@ -128,6 +145,7 @@ body {
   font-family: var(--font-serif);
   font-size: clamp(2.5rem, 5vw, 4.5rem);
   font-weight: 400;
+  letter-spacing: -5px;
   line-height: 1.1;
   margin: 0 0 4rem 0;
   color: #1a1a1a;
