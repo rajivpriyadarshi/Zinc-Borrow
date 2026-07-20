@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=33">
+  <link rel="stylesheet" href="style.css?v=34">
 </head>
 
 <body>
@@ -166,6 +166,51 @@
     <!-- Bouncing coins (populated by JS) -->
     <div class="coins-floor" id="coinsFloor"></div>
   </section>
+
+  <!-- Footer -->
+  <footer class="site-footer" id="siteFooter">
+    <!-- Layer 1: Black base is the footer background itself -->
+    <!-- Layer 2: Mountain image (parallax slowest) -->
+    <div class="footer-mountain" data-parallax-speed="0.25">
+      <img src="assets/footer/mountain.png" alt="" loading="lazy">
+    </div>
+    <!-- Layer 3: Golden gradient overlaid on top of mountain (as in Figma) -->
+    <div class="footer-gradient" data-parallax-speed="0.1"></div>
+
+    <!-- Layer 4: Glowing ellipses -->
+    <div class="footer-glows" aria-hidden="true">
+      <img class="footer-glow g1" src="assets/footer/glow.svg" alt="" data-parallax-speed="0.35">
+      <img class="footer-glow g2" src="assets/footer/glow.svg" alt="" data-parallax-speed="0.5">
+      <img class="footer-glow g3" src="assets/footer/glow.svg" alt="" data-parallax-speed="0.2">
+    </div>
+
+    <!-- Layer 5: Content -->
+    <div class="footer-inner">
+      <div class="footer-hero" data-parallax-speed="0.05">
+        <h2>More options. Better outcomes.</h2>
+        <p>A different approach to wealth, liquidity, planning, and visibility.</p>
+        <a href="#" class="footer-cta">
+          <span>Request access</span>
+          <img src="assets/footer/arrow.svg" alt="">
+        </a>
+      </div>
+
+      <div class="footer-bottom">
+        <hr>
+        <div class="footer-bottom-row">
+          <div class="footer-links">
+            <a href="#">Privacy Policy</a>
+            <a href="#">Terms of Service</a>
+          </div>
+          <div class="footer-logo">
+            <img class="footer-logo-mark" src="assets/footer/logo-mark.svg" alt="Zinc">
+            <img class="footer-logo-text" src="assets/footer/logo-text.svg" alt="Zinc">
+          </div>
+          <p class="footer-copy">2026. All rights reserved</p>
+        </div>
+      </div>
+    </div>
+  </footer>
   </div>
 
   <!-- Scripts -->
@@ -335,6 +380,30 @@
       
       // Time 16 to 17: Final rest for circle-5 is naturally built into the timeline length (17)
     }
+  })();
+
+  /* Footer parallax — each layer moves at its own speed as the footer scrolls into view */
+  (function initFooterParallax() {
+    const footer = document.querySelector('#siteFooter');
+    if (!footer) return;
+    const layers = footer.querySelectorAll('[data-parallax-speed]');
+    if (!layers.length) return;
+    layers.forEach((el) => {
+      const speed = parseFloat(el.dataset.parallaxSpeed) || 0.2;
+      // Range: as the footer scrolls from below the viewport up to fully in view,
+      // shift the layer by (viewport height * speed) — slower speeds = layer feels distant.
+      gsap.to(el, {
+        y: () => -window.innerHeight * speed,
+        ease: 'none',
+        scrollTrigger: {
+          trigger: footer,
+          start: 'top bottom',
+          end: 'bottom top',
+          scrub: true,
+          invalidateOnRefresh: true,
+        },
+      });
+    });
   })();
 
   /* Lenis */
