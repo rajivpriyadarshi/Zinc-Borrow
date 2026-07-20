@@ -502,3 +502,187 @@ body, html {
     display: none;
   }
 }
+
+/* ============================================================
+   Founders section
+   ============================================================ */
+.founders-section {
+  position: relative;
+  background: #fff;
+  padding: 80px 24px 0 24px;
+  overflow: hidden;
+  height: 100vh;
+  height: 100svh;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.founders-title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: clamp(36px, 4.2vw, 56px);
+  letter-spacing: -3.92px;
+  line-height: 1.2;
+  color: #000;
+  text-align: center;
+  margin: 0 0 24px 0;
+  position: relative;
+  z-index: 2;
+}
+
+.founders-list {
+  max-width: 676px;
+  width: 100%;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  position: relative;
+  z-index: 2;
+  perspective: 1200px;
+}
+
+.founder-card {
+  transform-style: preserve-3d;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
+  will-change: transform;
+}
+
+.founder-card {
+  background: rgba(255, 255, 255, 0.55);
+  backdrop-filter: blur(18px) saturate(140%);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  border: 0.9px solid rgba(0, 0, 0, 0.85);
+  border-radius: 36px;
+  padding: 20px;
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  overflow: hidden;
+}
+
+.founder-photo {
+  flex-shrink: 0;
+  width: 140px;
+  height: 140px;
+  border-radius: 24px;
+  overflow: hidden;
+  background: #dbc8a8;
+}
+
+.founder-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.founder-info {
+  flex: 1 0 0;
+  min-width: 0;
+}
+
+.founder-info h3 {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.8px;
+  line-height: 1.1;
+  color: #353535;
+  margin: 0 0 2px 0;
+  text-transform: capitalize;
+}
+
+.founder-role {
+  font-family: var(--font-sans);
+  font-weight: 400;
+  font-size: 15px;
+  color: #7b440a;
+  margin: 0 0 4px 0;
+  line-height: 1.4;
+}
+
+.founder-info ul {
+  margin: 0;
+  padding-left: 20px;
+  color: rgba(0, 0, 0, 0.7);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.founder-info li {
+  margin: 0;
+}
+
+/* Coins field (scattered across the section) */
+.coins-floor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.coin {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  background: #fff;
+  border: 1.5px solid #111;
+  box-shadow: 6px 8px 0 rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: transform;
+  transform-origin: center center;
+}
+
+/* Inner dashed ring on the coin face */
+.coin::before {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border-radius: 50%;
+  border: 2px dashed #111;
+  border-style: dotted;
+  opacity: 0.9;
+}
+
+.coin span {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 64px;
+  line-height: 1;
+  color: #111;
+  letter-spacing: -2px;
+  z-index: 1;
+}
+
+@media (max-width: 768px) {
+  .founders-section {
+    padding: 64px 16px 0 16px;
+  }
+  .founders-title {
+    font-size: 36px;
+    letter-spacing: -2px;
+  }
+  .founder-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 20px;
+    border-radius: 28px;
+    gap: 16px;
+  }
+  .founder-photo {
+    width: 100%;
+    height: 220px;
+  }
+  .founder-info h3 { font-size: 22px; }
+  .founder-role { font-size: 15px; }
+  .founder-info ul { font-size: 14px; }
+  .coins-floor { height: 140px; }
+}

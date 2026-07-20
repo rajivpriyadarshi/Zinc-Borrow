@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=22">
+  <link rel="stylesheet" href="style.css?v=28">
 </head>
 
 <body>
@@ -109,6 +109,44 @@
       <p>That's the future we're building.</p>
     </div>
   </section>
+
+  <!-- Founders Section -->
+  <section class="founders-section" id="founders">
+    <h2 class="founders-title">Meet the founders</h2>
+    <div class="founders-list">
+      <article class="founder-card">
+        <div class="founder-photo">
+          <img src="assets/founders/prashanth.png" alt="Prashanth Ranganathan">
+        </div>
+        <div class="founder-info">
+          <h3>Prashanth Ranganathan</h3>
+          <p class="founder-role">Founder and CEO, Zinc</p>
+          <ul>
+            <li>Former PayU Credit CEO</li>
+            <li>Serial entrepreneur — Founder of Paysense and Truvie Security</li>
+            <li>Stanford University graduate</li>
+          </ul>
+        </div>
+      </article>
+      <article class="founder-card">
+        <div class="founder-photo">
+          <img src="assets/founders/piyush.png" alt="Piyush Gupta">
+        </div>
+        <div class="founder-info">
+          <h3>Piyush Gupta</h3>
+          <p class="founder-role">Co-Founder and CTO, Zinc</p>
+          <ul>
+            <li>Former CDO at PayU Credit</li>
+            <li>AVP at Citibank, Data analyst at MuSigma</li>
+            <li>MSc and PhD from University of Illinois, Urbana-Champaign</li>
+          </ul>
+        </div>
+      </article>
+    </div>
+
+    <!-- Bouncing coins (populated by JS) -->
+    <div class="coins-floor" id="coinsFloor"></div>
+  </section>
   </div>
 
   <!-- Scripts -->
@@ -154,22 +192,6 @@
 
     if (root && glassElements.length > 0) {
       const totalSections = 5;
-
-      // Entrance animation for circle-1 as the section scrolls into view.
-      // Uses a self-contained tween (not scrubbed) so it commits final values reliably.
-      gsap.set('.circle-1', { scale: 0.6, autoAlpha: 0 });
-      gsap.set('.circle-1 h2', { y: 24, autoAlpha: 0 });
-      gsap.set('.circle-1 p', { y: 24, autoAlpha: 0 });
-      ScrollTrigger.create({
-        trigger: "#liquid-root",
-        start: "top 85%",
-        once: true,
-        onEnter: () => {
-          gsap.to('.circle-1', { scale: 1, autoAlpha: 1, duration: 0.9, ease: "power2.out" });
-          gsap.to('.circle-1 h2', { y: 0, autoAlpha: 1, duration: 0.7, delay: 0.2, ease: "power2.out" });
-          gsap.to('.circle-1 p', { y: 0, autoAlpha: 0.4, duration: 0.7, delay: 0.32, ease: "power2.out" });
-        }
-      });
 
       const masterTl = gsap.timeline({
         scrollTrigger: {
@@ -266,15 +288,15 @@
         // Time t to t+1: The circle rests so the user can read the text. (No animation here, it just stays at scale 1)
         
         // Time t+1 to t+2: Tunnel Out current circle
-        masterTl.to(`${currentCircle} h2, ${currentCircle} p`, { 
-          autoAlpha: 0, 
-          duration: 0.3, 
-          ease: "power1.inOut" 
+        masterTl.to(`${currentCircle} h2, ${currentCircle} p`, {
+          autoAlpha: 0,
+          duration: 0.3,
+          ease: "power1.inOut"
         }, t + 1);
 
-        masterTl.to(currentCircle, { 
-          scale: 6, // Reduced from 15 to 6 to save massive GPU WebGL rendering cost while still covering screen
-          autoAlpha: 0, 
+        masterTl.to(currentCircle, {
+          scale: 6,
+          autoAlpha: 0,
           duration: 1,
           ease: "power2.inOut"
         }, t + 1);
@@ -301,6 +323,297 @@
   lenis.on('scroll', ScrollTrigger.update);
   gsap.ticker.add((time) => {lenis.raf(time * 1000);});
   gsap.ticker.lagSmoothing(0);
+
+  /* Founders section entrance + tilt-on-hover */
+  (function initFoundersEntrance() {
+    const section = document.querySelector('.founders-section');
+    if (!section) return;
+    const title = section.querySelector('.founders-title');
+    const cards = section.querySelectorAll('.founder-card');
+    gsap.set([title, ...cards], { opacity: 0, y: 40 });
+    gsap.timeline({
+      scrollTrigger: { trigger: section, start: 'top 75%', once: true },
+    })
+      .to(title, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' })
+      .to(cards, { opacity: 1, y: 0, duration: 0.9, stagger: 0.15, ease: 'power3.out' }, '-=0.5');
+
+    // Mouse-tilt: 3D rotate each card based on cursor position within its bounds
+    cards.forEach((card) => {
+      const setX = gsap.quickTo(card, 'rotationY', { duration: 0.5, ease: 'power2.out' });
+      const setY = gsap.quickTo(card, 'rotationX', { duration: 0.5, ease: 'power2.out' });
+      const setScale = gsap.quickTo(card, 'scale', { duration: 0.5, ease: 'power2.out' });
+
+      card.addEventListener('mousemove', (e) => {
+        const rect = card.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        // Normalized -1..1 based on cursor offset from card center
+        const nx = (e.clientX - cx) / (rect.width / 2);
+        const ny = (e.clientY - cy) / (rect.height / 2);
+        const MAX_TILT = 8; // degrees
+        setX(nx * MAX_TILT);
+        setY(-ny * MAX_TILT);
+        setScale(1.02);
+      });
+
+      card.addEventListener('mouseleave', () => {
+        setX(0);
+        setY(0);
+        setScale(1);
+      });
+    });
+  })();
+
+  /* Coin field → jittered grid, drop-in, then mouse-repel */
+  (function initCoins() {
+    const floor = document.querySelector('#coinsFloor');
+    const section = document.querySelector('.founders-section');
+    const foundersList = document.querySelector('.founders-list');
+    if (!floor || !section) return;
+
+    const SYMBOLS = ['$', '€', '£', '¥', '₹', '₣', '₩', '₺', '₽', '₴', '₫', '฿'];
+    const coinEls = [];
+    const state = [];
+
+    function clearCoins() {
+      floor.innerHTML = '';
+      coinEls.length = 0;
+      state.length = 0;
+    }
+
+    function buildGrid() {
+      clearCoins();
+      const W = floor.clientWidth;
+      const H = floor.clientHeight;
+      const COIN = Math.max(110, Math.min(180, Math.round(W / 10)));
+
+      // Shuffle so placement isn't left→right by index
+      const symbols = SYMBOLS.slice().sort(() => Math.random() - 0.5);
+      const n = symbols.length;
+
+      // Pile them along the bottom edge — most on the floor, a few stacked on top.
+      // Row 0 sits on the floor; row 1+ sits slightly staggered on top like a real pile.
+      const perRow = Math.min(n, Math.max(6, Math.floor(W / (COIN * 1.1))));
+      const placed = [];
+      let idx = 0;
+
+      symbols.forEach((sym, i) => {
+        const size = Math.round(gsap.utils.random(COIN * 0.85, COIN * 1.1));
+        const row = Math.floor(idx / perRow);
+        const col = idx % perRow;
+        idx++;
+
+        // Base X across the row with jitter
+        const rowShift = row * (COIN * 0.5); // stagger upper rows
+        const slotW = (W - COIN) / (perRow - 1);
+        const baseX = col * slotW + gsap.utils.random(-COIN * 0.15, COIN * 0.15) + (row % 2 ? rowShift : -rowShift);
+        // Y: pile from the bottom up. row 0 rests on the floor.
+        const stackY = H - size - 16 - row * (COIN * 0.75) + gsap.utils.random(-8, 8);
+
+        const homeX = Math.max(8, Math.min(W - size - 8, baseX));
+        const homeY = stackY;
+
+        placed.push({ homeX, homeY, size });
+
+        const el = document.createElement('div');
+        el.className = 'coin';
+        el.style.width = size + 'px';
+        el.style.height = size + 'px';
+        const span = document.createElement('span');
+        span.textContent = sym;
+        span.style.fontSize = Math.round(size * 0.5) + 'px';
+        el.appendChild(span);
+        floor.appendChild(el);
+
+        coinEls.push(el);
+        state.push({
+          homeX,
+          homeY,
+          x: 0, y: 0,
+          vx: 0, vy: 0,
+          rot: gsap.utils.random(-25, 25),
+          vrot: 0,
+          restRot: gsap.utils.random(-20, 20),
+          size,
+          settled: false,
+        });
+
+        gsap.set(el, { left: homeX, top: homeY, rotation: state[state.length - 1].rot, opacity: 0 });
+      });
+    }
+
+    let mouseX = -9999, mouseY = -9999;
+    let interactiveMode = false;
+
+    function launch() {
+      buildGrid();
+      // Start above the section, tumbling — offset by homeY so all coins fall from off-screen top
+      coinEls.forEach((el, i) => {
+        const s = state[i];
+        s.y = -s.homeY - s.size - 80;
+        s.rot = gsap.utils.random(-260, 260);
+        gsap.set(el, { y: s.y, rotation: s.rot, opacity: 1 });
+      });
+
+      coinEls.forEach((el, i) => {
+        const s = state[i];
+        const dur = gsap.utils.random(1.3, 1.9);
+        gsap.to(s, {
+          y: 0,
+          rot: s.restRot,
+          duration: dur,
+          delay: gsap.utils.random(0, 0.8),
+          ease: 'bounce.out',
+          onUpdate: () => {
+            gsap.set(el, { y: s.y, rotation: s.rot });
+          },
+          onComplete: () => {
+            s.settled = true;
+            if (!interactiveMode) enableInteractive();
+          },
+        });
+      });
+    }
+
+    function enableInteractive() {
+      interactiveMode = true;
+      window.addEventListener('mousemove', onMouseMove, { passive: true });
+      window.addEventListener('mouseleave', () => { mouseX = -9999; mouseY = -9999; });
+      gsap.ticker.add(physicsTick);
+    }
+
+    function onMouseMove(e) {
+      mouseX = e.clientX;
+      mouseY = e.clientY;
+    }
+
+    const REPEL_RADIUS = 200;
+    const REPEL_STRENGTH = 1800;
+    const DAMPING = 0.96;
+    const ROT_DAMPING = 0.95;
+    const RESTITUTION = 0.85;   // bounciness on coin-coin collision (0..1)
+    const WALL_RESTITUTION = 0.7;
+
+    function physicsTick(time, delta) {
+      const dt = Math.min(delta / 16.6667, 2);
+      const floorRect = floor.getBoundingClientRect();
+      const W = floor.clientWidth;
+      const H = floor.clientHeight;
+
+      // Mouse repulsion + coin↔coin repulsion + wall bounds — NO spring to home
+      for (let i = 0; i < coinEls.length; i++) {
+        const s = state[i];
+        if (!s.settled) continue;
+
+        const cxLocal = s.homeX + s.size / 2 + s.x;
+        const cyLocal = s.homeY + s.size / 2 + s.y;
+        const coinCenterX = floorRect.left + cxLocal;
+        const coinCenterY = floorRect.top + cyLocal;
+
+        // Mouse repel
+        const mdx = coinCenterX - mouseX;
+        const mdy = coinCenterY - mouseY;
+        const mdist = Math.hypot(mdx, mdy);
+        if (mdist < REPEL_RADIUS && mdist > 0.01) {
+          const force = (1 - mdist / REPEL_RADIUS) * REPEL_STRENGTH;
+          s.vx += (mdx / mdist) * force * dt / 60;
+          s.vy += (mdy / mdist) * force * dt / 60;
+          s.vrot += (mdx / mdist) * force * 0.015 * dt / 60;
+        }
+
+        // Coin-coin elastic collision — impulse-based bounce
+        for (let j = i + 1; j < coinEls.length; j++) {
+          const o = state[j];
+          if (!o.settled) continue;
+          const ocx = o.homeX + o.size / 2 + o.x;
+          const ocy = o.homeY + o.size / 2 + o.y;
+          const dx = cxLocal - ocx;
+          const dy = cyLocal - ocy;
+          const dist = Math.hypot(dx, dy);
+          const minDist = (s.size + o.size) / 2 + 4;
+          if (dist < minDist && dist > 0.01) {
+            const nx = dx / dist;
+            const ny = dy / dist;
+            // Positional correction so they don't sink into each other
+            const overlap = minDist - dist;
+            const push = overlap / 2;
+            s.x += nx * push;
+            s.y += ny * push;
+            o.x -= nx * push;
+            o.y -= ny * push;
+
+            // Relative velocity along normal
+            const rvx = s.vx - o.vx;
+            const rvy = s.vy - o.vy;
+            const velAlongNormal = rvx * nx + rvy * ny;
+            if (velAlongNormal < 0) {
+              // Equal mass elastic impulse with restitution
+              const jimp = -(1 + RESTITUTION) * velAlongNormal / 2;
+              const ix = jimp * nx;
+              const iy = jimp * ny;
+              s.vx += ix;
+              s.vy += iy;
+              o.vx -= ix;
+              o.vy -= iy;
+              // Spin from tangential component
+              const tx = -ny, ty = nx;
+              const tang = rvx * tx + rvy * ty;
+              s.vrot += tang * 0.6;
+              o.vrot -= tang * 0.6;
+            }
+          }
+        }
+
+        // Elastic walls
+        const leftEdge = -s.homeX + 8;
+        const rightEdge = W - s.homeX - s.size - 8;
+        const topEdge = -s.homeY + 8;
+        const bottomEdge = H - s.homeY - s.size - 8;
+        if (s.x < leftEdge) { s.x = leftEdge; if (s.vx < 0) s.vx = -s.vx * WALL_RESTITUTION; }
+        if (s.x > rightEdge) { s.x = rightEdge; if (s.vx > 0) s.vx = -s.vx * WALL_RESTITUTION; }
+        if (s.y < topEdge) { s.y = topEdge; if (s.vy < 0) s.vy = -s.vy * WALL_RESTITUTION; }
+        if (s.y > bottomEdge) { s.y = bottomEdge; if (s.vy > 0) s.vy = -s.vy * WALL_RESTITUTION; }
+
+        // Damping (friction so they eventually rest)
+        s.vx *= Math.pow(DAMPING, dt);
+        s.vy *= Math.pow(DAMPING, dt);
+        s.vrot *= Math.pow(ROT_DAMPING, dt);
+
+        // Integrate
+        s.x += s.vx * dt;
+        s.y += s.vy * dt;
+        s.rot += s.vrot * dt;
+      }
+
+      // Apply transforms once per coin, after all interactions
+      for (let i = 0; i < coinEls.length; i++) {
+        const s = state[i];
+        if (!s.settled) continue;
+        gsap.set(coinEls[i], { x: s.x, y: s.y, rotation: s.rot });
+      }
+    }
+
+    ScrollTrigger.create({
+      trigger: '.founders-section',
+      start: 'top 70%',
+      once: true,
+      onEnter: launch,
+    });
+
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        // Rebuild grid + re-settle immediately (no re-drop)
+        buildGrid();
+        state.forEach((s, i) => {
+          s.settled = true;
+          s.x = 0; s.y = 0; s.vx = 0; s.vy = 0; s.vrot = 0;
+          gsap.set(coinEls[i], { x: 0, y: 0, rotation: s.rot, opacity: 1 });
+        });
+      }, 200);
+    });
+  })();
   </script>
 </body>
 
