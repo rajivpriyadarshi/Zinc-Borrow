@@ -350,6 +350,8 @@ body, html {
   opacity: 0;
   visibility: hidden;
   z-index: 10;
+  background-color: #000;
+  display: block;
 }
 
 #liquid-root .vid-1 { 
@@ -987,4 +989,5 @@ body, html {
   .founder-info h3 { font-size: 20px; }
   .founder-role { font-size: 14px; }
   .founder-info ul { font-size: 13px; }
+  .coins-floor { display: none; }
 }

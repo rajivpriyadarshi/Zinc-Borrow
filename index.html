@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=36">
+  <link rel="stylesheet" href="style.css?v=39">
 </head>
 
 <body>
@@ -80,12 +80,12 @@
   </div>
 
   <section id="liquid-root" class="video-sequence" style="position: relative; height: 100vh; overflow: hidden; background: #000;">
-    <!-- Videos as sibling backgrounds. First video preloads eagerly; others load metadata only until near-active -->
-    <video class="bg-vid vid-1" src="assets/videos/01_scrub.mp4" poster="assets/posters/01_scrub.jpg" muted playsinline webkit-playsinline preload="auto" disableRemotePlayback></video>
-    <video class="bg-vid vid-2" src="assets/videos/02_scrub.mp4" poster="assets/posters/02_scrub.jpg" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
-    <video class="bg-vid vid-3" src="assets/videos/03_scrub.mp4" poster="assets/posters/03_scrub.jpg" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
-    <video class="bg-vid vid-4" src="assets/videos/04_scrub.mp4" poster="assets/posters/04_scrub.jpg" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
-    <video class="bg-vid vid-5" src="assets/videos/05_scrub.mp4" poster="assets/posters/05_scrub.jpg" muted playsinline webkit-playsinline preload="metadata" disableRemotePlayback></video>
+    <!-- Frame-sequence canvases. One canvas per scene; frames drawn from preloaded Image objects. -->
+    <canvas class="bg-vid vid-1" data-clip="01"></canvas>
+    <canvas class="bg-vid vid-2" data-clip="02"></canvas>
+    <canvas class="bg-vid vid-3" data-clip="03"></canvas>
+    <canvas class="bg-vid vid-4" data-clip="04"></canvas>
+    <canvas class="bg-vid vid-5" data-clip="05"></canvas>
 
     <!-- Glass Circles -->
     <div class="glass-circle circle-1">
@@ -256,88 +256,125 @@
     if (root && glassElements.length > 0) {
       const totalSections = 5;
 
+      // ------------------------------------------------------------------
+      // Frame-sequence scrubbing (replaces <video> currentTime scrubbing).
+      // Each clip is a folder of 30 WebP frames. We preload each clip's
+      // Image objects and draw the active frame to that clip's <canvas>.
+      // Bulletproof on iOS Safari: no video decoder gymnastics.
+      // ------------------------------------------------------------------
+      const FRAMES_PER_CLIP = 30;
+      const frameSet = (window.matchMedia && window.matchMedia('(max-width: 768px)').matches)
+        ? 'mobile' : 'desktop';
+      const clipIds = ['01', '02', '03', '04', '05'];
+      const canvases = clipIds.map((_, j) => document.querySelector(`.vid-${j + 1}`));
+      const ctxs = canvases.map((c) => {
+        if (!c) return null;
+        const ctx = c.getContext('2d');
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        return ctx;
+      });
+      const frames = clipIds.map(() => new Array(FRAMES_PER_CLIP));
+      const clipReady = clipIds.map(() => false);
+      const targetFrame = clipIds.map(() => 0);
+      const currentFrame = clipIds.map(() => -1);
+
+      function sizeCanvas(canvas, img) {
+        if (!canvas || !img) return;
+        const dpr = Math.min(window.devicePixelRatio || 1, 2);
+        const w = canvas.clientWidth || canvas.parentElement.clientWidth;
+        const h = canvas.clientHeight || canvas.parentElement.clientHeight;
+        canvas.width = Math.round(w * dpr);
+        canvas.height = Math.round(h * dpr);
+      }
+
+      function drawFrame(clipIdx, frameIdx) {
+        const canvas = canvases[clipIdx];
+        const ctx = ctxs[clipIdx];
+        const img = frames[clipIdx][frameIdx];
+        if (!canvas || !ctx || !img || !img.complete) return;
+        if (canvas.width === 0 || canvas.height === 0) sizeCanvas(canvas, img);
+        // object-fit: cover math
+        const cw = canvas.width, ch = canvas.height;
+        const iw = img.naturalWidth, ih = img.naturalHeight;
+        const scale = Math.max(cw / iw, ch / ih);
+        const dw = iw * scale, dh = ih * scale;
+        const dx = (cw - dw) / 2, dy = (ch - dh) / 2;
+        ctx.drawImage(img, dx, dy, dw, dh);
+        currentFrame[clipIdx] = frameIdx;
+      }
+
+      // Preload every frame of every clip. Small enough (~4MB mobile / ~10MB desktop) that
+      // we can just eat it upfront rather than staging by scroll position.
+      clipIds.forEach((cid, ci) => {
+        let loaded = 0;
+        for (let fi = 0; fi < FRAMES_PER_CLIP; fi++) {
+          const img = new Image();
+          const num = String(fi + 1).padStart(2, '0');
+          img.decoding = 'async';
+          img.src = `assets/frames/${frameSet}/${cid}/frame_${num}.webp`;
+          img.onload = () => {
+            loaded++;
+            if (fi === 0 && ci === 0) {
+              // First frame of first clip: draw immediately so the scene isn't blank.
+              sizeCanvas(canvases[0], img);
+              drawFrame(0, 0);
+            }
+            if (loaded === FRAMES_PER_CLIP) clipReady[ci] = true;
+          };
+          frames[ci][fi] = img;
+        }
+      });
+
+      // Resize handler: rebuild canvas backing store on viewport changes.
+      window.addEventListener('resize', () => {
+        canvases.forEach((c, i) => {
+          const f = frames[i][Math.max(0, currentFrame[i])];
+          if (c && f && f.complete) {
+            sizeCanvas(c, f);
+            drawFrame(i, Math.max(0, currentFrame[i]));
+          }
+        });
+      });
+
       const masterTl = gsap.timeline({
         scrollTrigger: {
           trigger: "#liquid-root",
           start: "top top",
-          end: "+=2500%", // Longer pin to accommodate the separated sequences
-          scrub: 1, // Smooth scrubbing
+          end: "+=2500%",
+          scrub: 1,
           pin: true
         }
       });
 
-      // 1. Setup Video Scrubbing using Intra-Frame Videos & RAF Lerping
-      // Cache video elements once (avoid re-querying every RAF tick)
-      const vidEls = [];
-      let targetTimes = [0, 0, 0, 0, 0];
+      // Drive targetFrame from the same master timeline (same start/end windows as before)
       for (let j = 1; j <= totalSections; j++) {
-        const vidEl = document.querySelector(`.vid-${j}`);
-        vidEls.push(vidEl);
-        if (vidEl) {
-          vidEl.pause();
-          // Force the first frame to render.
-          // iOS Safari won't decode until play() is called; then we immediately pause().
-          if (j === 1) {
-            const drawFirstFrame = () => {
-              const p = vidEl.play();
-              if (p && typeof p.then === 'function') {
-                p.then(() => { vidEl.pause(); vidEl.currentTime = 0.001; })
-                 .catch(() => { vidEl.currentTime = 0.001; });
-              } else {
-                vidEl.pause();
-                vidEl.currentTime = 0.001;
-              }
-            };
-            if (vidEl.readyState >= 2) drawFirstFrame();
-            else vidEl.addEventListener('loadeddata', drawFirstFrame, { once: true });
+        const clipIdx = j - 1;
+        const proxy = { progress: 0 };
+        const startTime = (j === 1) ? 0 : (j - 2) * 4 + 2;
+        const endTime = (j === totalSections) ? 17 : (j - 1) * 4 + 3;
+        const duration = endTime - startTime;
+        masterTl.to(proxy, {
+          progress: 1,
+          duration,
+          ease: "none",
+          onUpdate: () => {
+            targetFrame[clipIdx] = Math.min(
+              FRAMES_PER_CLIP - 1,
+              Math.round(proxy.progress * (FRAMES_PER_CLIP - 1))
+            );
           }
-          const proxy = { progress: 0 };
+        }, startTime);
+      }
 
-          let startTime = (j === 1) ? 0 : (j - 2) * 4 + 2;
-          let endTime = (j === totalSections) ? 17 : (j - 1) * 4 + 3;
-          let duration = endTime - startTime;
-
-          masterTl.to(proxy, {
-            progress: 1,
-            duration: duration,
-            ease: "none",
-            onUpdate: () => {
-              if (!isNaN(vidEl.duration)) {
-                targetTimes[j - 1] = vidEl.duration * proxy.progress;
-              }
-              // Upgrade preload as this video's scrub window becomes active
-              if (proxy.progress > 0 && vidEl.preload !== "auto") {
-                vidEl.preload = "auto";
-                vidEl.load();
-              }
-            }
-          }, startTime);
+      // RAF loop: draw whenever targetFrame differs from currentFrame. Cheap.
+      function renderFrames() {
+        for (let i = 0; i < totalSections; i++) {
+          if (targetFrame[i] !== currentFrame[i]) drawFrame(i, targetFrame[i]);
         }
+        requestAnimationFrame(renderFrames);
       }
-
-      // Smooth Lerp loop — only scrub the currently active + neighbor videos.
-      // This avoids waking all 5 <video> decoders every frame.
-      function currentActiveIndex() {
-        // Timeline progress → seconds along the 17s master timeline
-        const tSec = masterTl.time();
-        // Section i covers [ (i-1)*4 - 0.5, (i-1)*4 + 3.5 ] roughly (rest + fade windows)
-        return Math.min(totalSections - 1, Math.max(0, Math.round(tSec / 4)));
-      }
-      function renderVideoScrub() {
-        const active = currentActiveIndex();
-        // Lerp active + immediate neighbors only (indices active-1, active, active+1)
-        for (let j = Math.max(0, active - 1); j <= Math.min(totalSections - 1, active + 1); j++) {
-          const vidEl = vidEls[j];
-          if (vidEl && !isNaN(vidEl.duration)) {
-            const diff = targetTimes[j] - vidEl.currentTime;
-            if (Math.abs(diff) > 0.01) {
-              vidEl.currentTime += diff * 0.15;
-            }
-          }
-        }
-        requestAnimationFrame(renderVideoScrub);
-      }
-      renderVideoScrub();
+      renderFrames();
 
       // 2. Setup the Rhythmic Transitions (Circle Out -> Video Focus -> Circle In)
       for (let i = 1; i < totalSections; i++) {
