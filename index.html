@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=28">
+  <link rel="stylesheet" href="style.css?v=29">
 </head>
 
 <body>
@@ -385,33 +385,46 @@
       clearCoins();
       const W = floor.clientWidth;
       const H = floor.clientHeight;
-      const COIN = Math.max(110, Math.min(180, Math.round(W / 10)));
+      const isMobile = W < 768;
+      const COIN = isMobile
+        ? Math.max(60, Math.min(90, Math.round(W / 6)))
+        : Math.max(110, Math.min(180, Math.round(W / 10)));
 
-      // Shuffle so placement isn't left→right by index
       const symbols = SYMBOLS.slice().sort(() => Math.random() - 0.5);
-      const n = symbols.length;
-
-      // Pile them along the bottom edge — most on the floor, a few stacked on top.
-      // Row 0 sits on the floor; row 1+ sits slightly staggered on top like a real pile.
-      const perRow = Math.min(n, Math.max(6, Math.floor(W / (COIN * 1.1))));
       const placed = [];
       let idx = 0;
 
       symbols.forEach((sym, i) => {
         const size = Math.round(gsap.utils.random(COIN * 0.85, COIN * 1.1));
-        const row = Math.floor(idx / perRow);
-        const col = idx % perRow;
-        idx++;
+        let homeX, homeY;
 
-        // Base X across the row with jitter
-        const rowShift = row * (COIN * 0.5); // stagger upper rows
-        const slotW = (W - COIN) / (perRow - 1);
-        const baseX = col * slotW + gsap.utils.random(-COIN * 0.15, COIN * 0.15) + (row % 2 ? rowShift : -rowShift);
-        // Y: pile from the bottom up. row 0 rests on the floor.
-        const stackY = H - size - 16 - row * (COIN * 0.75) + gsap.utils.random(-8, 8);
-
-        const homeX = Math.max(8, Math.min(W - size - 8, baseX));
-        const homeY = stackY;
+        if (isMobile) {
+          // Random scatter across the entire section, avoiding overlaps
+          let tries = 0;
+          do {
+            homeX = gsap.utils.random(8, W - size - 8);
+            homeY = gsap.utils.random(8, H - size - 8);
+            tries++;
+            const ok = placed.every(p => {
+              const dx = (homeX + size / 2) - (p.homeX + p.size / 2);
+              const dy = (homeY + size / 2) - (p.homeY + p.size / 2);
+              return Math.hypot(dx, dy) > (size + p.size) * 0.6;
+            });
+            if (ok || tries > 40) break;
+          } while (true);
+        } else {
+          // Desktop: pile along the bottom
+          const perRow = Math.max(6, Math.floor(W / (COIN * 1.1)));
+          const row = Math.floor(idx / perRow);
+          const col = idx % perRow;
+          idx++;
+          const rowShift = row * (COIN * 0.5);
+          const slotW = (W - COIN) / (perRow - 1);
+          const baseX = col * slotW + gsap.utils.random(-COIN * 0.15, COIN * 0.15) + (row % 2 ? rowShift : -rowShift);
+          const stackY = H - size - 16 - row * (COIN * 0.75) + gsap.utils.random(-8, 8);
+          homeX = Math.max(8, Math.min(W - size - 8, baseX));
+          homeY = stackY;
+        }
 
         placed.push({ homeX, homeY, size });
 
