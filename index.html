@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=61">
+  <link rel="stylesheet" href="style.css?v=63">
   <script>document.documentElement.classList.add('is-loading');</script>
 </head>
 
@@ -267,35 +267,40 @@
   // Register GSAP Plugins
   gsap.registerPlugin(ScrollTrigger);
   
-  // Parallax Layers
-  document.querySelectorAll('[data-parallax-layers]').forEach((triggerElement) => {
-    let tl = gsap.timeline({
-      scrollTrigger: {
-        trigger: triggerElement,
-        start: "0% 0%",
-        end: "100% 0%",
-        scrub: 0
-      }
+  // Parallax Layers — disabled on mobile.
+  // Reason: on iOS Safari, scroll-driven yPercent transforms across three
+  // stacked 2048² image layers trigger CPU raster every scroll pixel, which
+  // reads as choppy. The tiny vertical parallax isn't worth the jank on a
+  // phone; on desktop it stays.
+  const isMobileHero = window.matchMedia('(max-width: 768px)').matches;
+  if (!isMobileHero) {
+    document.querySelectorAll('[data-parallax-layers]').forEach((triggerElement) => {
+      let tl = gsap.timeline({
+        scrollTrigger: {
+          trigger: triggerElement,
+          start: "0% 0%",
+          end: "100% 0%",
+          scrub: 0.5
+        }
+      });
+      const layers = [
+        { layer: "1", yPercent: 70 },
+        { layer: "2", yPercent: 55 },
+        { layer: "3", yPercent: 40 },
+        { layer: "4", yPercent: 0 }
+      ];
+      layers.forEach((layerObj, idx) => {
+        tl.to(
+          triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
+          {
+            yPercent: layerObj.yPercent,
+            ease: "none"
+          },
+          idx === 0 ? undefined : "<"
+        );
+      });
     });
-    const layers = [
-      { layer: "1", yPercent: 70 },
-      { layer: "2", yPercent: 55 },
-      { layer: "3", yPercent: 40 },
-      { layer: "4", yPercent: 0 }
-    ];
-    // (Mobile no longer uses left:50% centering — the layers are now
-    // object-fit: cover across the full viewport, so no xPercent offset.)
-    layers.forEach((layerObj, idx) => {
-      tl.to(
-        triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
-        {
-          yPercent: layerObj.yPercent,
-          ease: "none"
-        },
-        idx === 0 ? undefined : "<"
-      );
-    });
-  });
+  }
   
   // Liquid Glass & Tunnel Sequence
   (async function initLiquidGlass() {
@@ -425,29 +430,62 @@
         const count = FRAME_COUNTS[ci];
         let loaded = 0;
         for (let fi = 0; fi < count; fi++) {
-          const img = new Image();
+          // Reuse frame 0 image if the phase-1 preload already fetched it.
+          const existing = frames[ci][fi];
+          if (existing && existing.complete && existing.naturalWidth > 0) {
+            loaded++;
+            if (isCritical) { criticalFramesLoaded++; updateLoader(); }
+            if (loaded === count) clipReady[ci] = true;
+            continue;
+          }
+          const img = existing || new Image();
           const num = String(fi + 1).padStart(3, '0');
           img.decoding = 'async';
-          img.src = `assets/frames/${frameSet}/${cid}/frame_${num}.webp?v=${FRAMES_CACHE_VER}`;
-          img.onload = img.onerror = () => {
+          const done = () => {
             loaded++;
-            if (fi === 0 && ci === 0) drawFrame(0, 0);
             if (isCritical) { criticalFramesLoaded++; updateLoader(); }
             if (loaded === count) clipReady[ci] = true;
           };
-          frames[ci][fi] = img;
+          if (existing) {
+            // Already had an in-flight Image (phase-1 first-frame). Wait for it.
+            if (existing.complete) done();
+            else {
+              existing.addEventListener('load', done, { once: true });
+              existing.addEventListener('error', done, { once: true });
+            }
+          } else {
+            img.src = `assets/frames/${frameSet}/${cid}/frame_${num}.webp?v=${FRAMES_CACHE_VER}`;
+            img.onload = img.onerror = done;
+            frames[ci][fi] = img;
+          }
         }
       }
 
-      // Critical: only clip 1 (scene 2). Scene 1 uses SVG, no preload needed.
-      preloadClip(1, true);
-      // Non-critical: kick off once the browser is likely done pulling critical bytes.
-      // If the user scrolls faster than this, the RAF draw loop simply keeps painting the
-      // last-loaded frame — the same graceful degradation as a buffering <video>.
-      function schedule(fn, delay) {
-        if ('requestIdleCallback' in window) requestIdleCallback(fn, { timeout: delay });
-        else setTimeout(fn, delay);
+      // Phase 1: fetch frame_001.webp from EVERY image-sequence clip in parallel,
+      // draw it into that clip's canvas as a placeholder. This is small (~4 files,
+      // KBs each) and finishes in under a second even on slow networks — so when
+      // the user scrolls to a scene, at least the first frame is already visible
+      // instead of a black canvas.
+      const firstFramesReady = new Array(totalSections).fill(false);
+      const firstFrameImgs = new Array(totalSections);
+      function preloadFirstFrame(ci) {
+        if (FRAME_COUNTS[ci] === 0) return;
+        const cid = clipIds[ci];
+        const img = new Image();
+        img.decoding = 'async';
+        img.src = `assets/frames/${frameSet}/${cid}/frame_001.webp?v=${FRAMES_CACHE_VER}`;
+        img.onload = () => {
+          firstFramesReady[ci] = true;
+          firstFrameImgs[ci] = img;
+          // Slot into the frames array so drawFrame(ci, 0) works immediately
+          if (!frames[ci][0]) frames[ci][0] = img;
+          drawFrame(ci, 0);
+        };
       }
+      for (let ci = 0; ci < totalSections; ci++) preloadFirstFrame(ci);
+
+      // Phase 2: full clip preload. Clip 1 (scene 2) is critical for the loader.
+      preloadClip(1, true);
       let bgStarted = false;
       function startBg() {
         if (bgStarted) return;
@@ -456,8 +494,6 @@
         setTimeout(() => preloadClip(3, false), 300);
         setTimeout(() => preloadClip(4, false), 600);
       }
-      // Also start background preload after 4s even if critical hasn't finished —
-      // avoids stalling behind the loader on very slow networks.
       setTimeout(startBg, 4000);
 
 

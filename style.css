@@ -721,7 +721,8 @@ body, html {
 
   /* All three parallax image layers are 2048x2048 pre-composited squares
      designed to stack. On mobile we cover the viewport with all of them so
-     the layered composition holds regardless of aspect ratio. */
+     the layered composition holds regardless of aspect ratio.
+     Force GPU compositing so the compositor thread paints them once. */
   .parallax__layer-img[data-parallax-layer="1"],
   .parallax__layer-img[data-parallax-layer="2"],
   .parallax__layer-img[data-parallax-layer="4"] {
@@ -733,6 +734,10 @@ body, html {
     object-fit: cover;
     object-position: bottom center;
     max-width: none;
+    transform: translateZ(0);
+    will-change: transform;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
   }
 
   .parallax__layer-title {
