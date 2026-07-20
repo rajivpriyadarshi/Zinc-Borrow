@@ -580,7 +580,7 @@ body, html {
 
 @media (max-width: 768px) {
   .site-footer { min-height: 800px; padding-bottom: 32px; }
-  .footer-mountain { top: -60px; width: 130%; }
+  .footer-mountain { top: 80px; width: 160%; max-width: none; }
   .footer-gradient { top: 220px; height: 800px; }
   .footer-glow { width: 500px; height: 500px; }
   .footer-hero { padding-top: 380px; }
