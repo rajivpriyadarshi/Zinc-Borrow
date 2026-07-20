@@ -124,6 +124,20 @@ body {
   z-index: 20;
 }
 
+/* Bottom-edge separator: fades the hero into the next section */
+.hero-separator {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -1px; /* nudge to avoid a hairline gap */
+  width: 100%;
+  height: auto;
+  z-index: 30;
+  pointer-events: none;
+  user-select: none;
+  display: block;
+}
+
 .parallax__layer-title {
   justify-content: center;
   align-items: flex-start;

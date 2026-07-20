@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=57">
+  <link rel="stylesheet" href="style.css?v=60">
   <script>document.documentElement.classList.add('is-loading');</script>
 </head>
 
@@ -70,6 +70,8 @@
             class="parallax__layer-img">
         </div>
       </div>
+      <!-- Bottom-edge separator: fades the hero into the white section below -->
+      <img src="assets/images/hero-separator.svg" class="hero-separator" alt="" aria-hidden="true">
     </section>
 
     <section class="second-fold">
@@ -318,7 +320,7 @@
       // that clip's <canvas>. Bulletproof on iOS Safari: no video decoder.
       // ------------------------------------------------------------------
       // Per-clip frame counts (0 means "not an image sequence — SVG scene")
-      const FRAME_COUNTS = [0, 125, 122, 63, 61];
+      const FRAME_COUNTS = [0, 125, 122, 63, 76];
       const frameSet = (window.matchMedia && window.matchMedia('(max-width: 768px)').matches)
         ? 'mobile' : 'desktop';
       const clipIds = ['01', '02', '03', '04', '05'];
@@ -421,6 +423,11 @@
         });
       })();
 
+      // Cache-buster for frame URLs. Bump when clip content changes so browsers
+      // don't serve stale WebPs from a previous batch that had a different
+      // frame count or different video source.
+      const FRAMES_CACHE_VER = 3;
+
       function preloadClip(ci, isCritical) {
         const cid = clipIds[ci];
         const count = FRAME_COUNTS[ci];
@@ -429,7 +436,7 @@
           const img = new Image();
           const num = String(fi + 1).padStart(3, '0');
           img.decoding = 'async';
-          img.src = `assets/frames/${frameSet}/${cid}/frame_${num}.webp`;
+          img.src = `assets/frames/${frameSet}/${cid}/frame_${num}.webp?v=${FRAMES_CACHE_VER}`;
           img.onload = img.onerror = () => {
             loaded++;
             if (fi === 0 && ci === 0) drawFrame(0, 0);

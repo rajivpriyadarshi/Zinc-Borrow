@@ -1,0 +1,36 @@
+<svg preserveAspectRatio="none" width="100%" height="100%" overflow="visible" style="display: block;" viewBox="0 0 2048 582.434" fill="none" xmlns="http://www.w3.org/2000/svg">
+<g id="hero_separator" clip-path="url(#clip0_0_4)">
+<g id="Ellipse 14354" filter="url(#filter0_f_0_4)">
+<circle cx="295.285" cy="652.871" r="398.222" fill="white"/>
+</g>
+<g id="Ellipse 14355" filter="url(#filter1_f_0_4)">
+<circle cx="1774.39" cy="547.214" r="398.222" fill="white"/>
+</g>
+<rect id="blur" x="1.35156" y="163.891" width="2048" height="257.354" fill="url(#paint0_linear_0_4)"/>
+<rect id="blur_2" x="1.35156" y="163.891" width="2048" height="257.354" fill="url(#paint1_linear_0_4)"/>
+<rect id="Rectangle 161127165" y="421.25" width="2049.35" height="161.185" fill="white"/>
+</g>
+<defs>
+<filter id="filter0_f_0_4" x="-216.715" y="140.871" width="1024" height="1024" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="56.8889" result="effect1_foregroundBlur_0_4"/>
+</filter>
+<filter id="filter1_f_0_4" x="1262.39" y="35.2144" width="1024" height="1024" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+<feGaussianBlur stdDeviation="56.8889" result="effect1_foregroundBlur_0_4"/>
+</filter>
+<linearGradient id="paint0_linear_0_4" x1="1025.35" y1="163.891" x2="1025.35" y2="421.245" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="white"/>
+</linearGradient>
+<linearGradient id="paint1_linear_0_4" x1="1025.35" y1="163.891" x2="1025.35" y2="421.245" gradientUnits="userSpaceOnUse">
+<stop stop-color="white" stop-opacity="0"/>
+<stop offset="1" stop-color="white"/>
+</linearGradient>
+<clipPath id="clip0_0_4">
+<rect width="2048" height="582.434" fill="white"/>
+</clipPath>
+</defs>
+</svg>
