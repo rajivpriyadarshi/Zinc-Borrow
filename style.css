@@ -23,6 +23,49 @@
   /* Approx brand color if needed, but text is black/grey */
 }
 
+/* Initial site loader — covers everything until critical assets preload */
+html.is-loading { overflow: hidden; }
+html.is-loading body > *:not(.site-loader) { visibility: hidden; }
+.site-loader {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: #0a0a0a;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 28px;
+  opacity: 1;
+  transition: opacity 0.6s ease;
+  pointer-events: auto;
+}
+.site-loader.is-hiding { opacity: 0; pointer-events: none; }
+.site-loader__mark {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: #fff;
+  font-family: var(--font-sans);
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: 3px;
+  opacity: 0.85;
+}
+.site-loader__bar {
+  width: 200px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.site-loader__fill {
+  height: 100%;
+  width: 0%;
+  background: rgba(255, 255, 255, 0.7);
+  transition: width 0.25s ease;
+}
+
 body {
   background-color: var(--color-bg);
   color: var(--color-text);

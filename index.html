@@ -6,10 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=44">
+  <link rel="stylesheet" href="style.css?v=45">
+  <script>document.documentElement.classList.add('is-loading');</script>
 </head>
 
 <body>
+  <!-- Initial loader: covers the site until the hero video + first two scrub clips are preloaded -->
+  <div class="site-loader" id="siteLoader" aria-hidden="false">
+    <div class="site-loader__mark">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M12 2L2 12L12 22L22 12L12 2Z" fill="white" />
+        <path d="M12 6L6 12L12 18L18 12L12 6Z" fill="#111" />
+      </svg>
+      <span>ZINC</span>
+    </div>
+    <div class="site-loader__bar"><div class="site-loader__fill" id="siteLoaderFill"></div></div>
+  </div>
+
   <div class="parallax">
     <!-- Simple Logo (Fixed or absolute) -->
     <div
@@ -293,11 +306,69 @@
         currentFrame[clipIdx] = frameIdx;
       }
 
-      // Preload every frame of every clip. Larger payload than before (~44MB
-      // mobile / ~74MB desktop for full native-fps + q=100), so we kick off
-      // clip 1 immediately and stagger the rest to avoid saturating the
-      // connection on the initial load.
-      function preloadClip(ci) {
+      // ------------------------------------------------------------------
+      // Preload orchestration
+      // ------------------------------------------------------------------
+      // Critical set = hero clouds video + clips 01 & 02. Once these are ready,
+      // hide the loader and reveal the site. Clips 03/04/05 continue preloading
+      // in the background so they're ready by the time the user scrubs to them.
+      const CRITICAL_CLIPS = [0, 1];
+      const criticalFramesTotal = CRITICAL_CLIPS.reduce((s, ci) => s + FRAME_COUNTS[ci], 0);
+      let criticalFramesLoaded = 0;
+      let heroVideoReady = false;
+      let criticalDone = false;
+
+      const loaderEl = document.getElementById('siteLoader');
+      const loaderFill = document.getElementById('siteLoaderFill');
+
+      function updateLoader() {
+        // Weight: hero video worth 15%, critical frames worth 85%
+        const framePct = criticalFramesTotal ? (criticalFramesLoaded / criticalFramesTotal) : 1;
+        const heroPct = heroVideoReady ? 1 : 0;
+        const pct = Math.min(1, heroPct * 0.15 + framePct * 0.85);
+        if (loaderFill) loaderFill.style.width = (pct * 100).toFixed(1) + '%';
+        if (!criticalDone && heroVideoReady && criticalFramesLoaded >= criticalFramesTotal) {
+          criticalDone = true;
+          revealSite();
+        }
+      }
+
+      function revealSite() {
+        if (loaderFill) loaderFill.style.width = '100%';
+        startBg();
+        // brief pause so the bar visibly hits 100% before fade
+        setTimeout(() => {
+          document.documentElement.classList.remove('is-loading');
+          if (loaderEl) {
+            loaderEl.classList.add('is-hiding');
+            loaderEl.addEventListener('transitionend', () => loaderEl.remove(), { once: true });
+          }
+          if (window.ScrollTrigger) ScrollTrigger.refresh();
+        }, 250);
+      }
+
+      // Hard timeout: reveal after 15s regardless. Slow networks shouldn't leave
+      // the user staring at a bar forever; the site can degrade gracefully.
+      setTimeout(() => {
+        if (!criticalDone) {
+          criticalDone = true;
+          revealSite();
+        }
+      }, 15000);
+
+      // Track the hero clouds <video> readiness.
+      (function trackHeroVideo() {
+        const heroVid = document.querySelector('.parallax__layer-img[data-parallax-layer="1"]');
+        if (!heroVid || heroVid.tagName !== 'VIDEO') { heroVideoReady = true; updateLoader(); return; }
+        const onReady = () => { heroVideoReady = true; updateLoader(); };
+        if (heroVid.readyState >= 3) onReady();
+        else {
+          heroVid.addEventListener('canplaythrough', onReady, { once: true });
+          heroVid.addEventListener('loadeddata', onReady, { once: true });
+        }
+      })();
+
+      function preloadClip(ci, isCritical) {
         const cid = clipIds[ci];
         const count = FRAME_COUNTS[ci];
         let loaded = 0;
@@ -306,19 +377,37 @@
           const num = String(fi + 1).padStart(3, '0');
           img.decoding = 'async';
           img.src = `assets/frames/${frameSet}/${cid}/frame_${num}.webp`;
-          img.onload = () => {
+          img.onload = img.onerror = () => {
             loaded++;
             if (fi === 0 && ci === 0) drawFrame(0, 0);
+            if (isCritical) { criticalFramesLoaded++; updateLoader(); }
             if (loaded === count) clipReady[ci] = true;
           };
           frames[ci][fi] = img;
         }
       }
-      // Clip 0 up front; clips 1..4 staggered by 400ms so the first paint isn't blocked.
-      preloadClip(0);
-      for (let ci = 1; ci < clipIds.length; ci++) {
-        setTimeout(() => preloadClip(ci), ci * 400);
+
+      // Critical: clip 0 immediately, clip 1 alongside (limited by browser's 6-conn cap anyway)
+      preloadClip(0, true);
+      preloadClip(1, true);
+      // Non-critical: kick off once the browser is likely done pulling critical bytes.
+      // If the user scrolls faster than this, the RAF draw loop simply keeps painting the
+      // last-loaded frame — the same graceful degradation as a buffering <video>.
+      function schedule(fn, delay) {
+        if ('requestIdleCallback' in window) requestIdleCallback(fn, { timeout: delay });
+        else setTimeout(fn, delay);
       }
+      let bgStarted = false;
+      function startBg() {
+        if (bgStarted) return;
+        bgStarted = true;
+        preloadClip(2, false);
+        setTimeout(() => preloadClip(3, false), 300);
+        setTimeout(() => preloadClip(4, false), 600);
+      }
+      // Also start background preload after 4s even if critical hasn't finished —
+      // avoids stalling behind the loader on very slow networks.
+      setTimeout(startBg, 4000);
 
 
       const masterTl = gsap.timeline({
