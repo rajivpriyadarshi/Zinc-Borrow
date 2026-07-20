@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=54">
+  <link rel="stylesheet" href="style.css?v=57">
   <script>document.documentElement.classList.add('is-loading');</script>
 </head>
 
@@ -36,17 +36,15 @@
     <section class="parallax__header">
       <div class="parallax__visuals">
         <div data-parallax-layers class="parallax__layers">
-          <!-- Background (Layer 1) -->
-          <video autoplay loop muted playsinline webkit-playsinline preload="auto" data-parallax-layer="1" class="parallax__layer-img">
-            <source src="assets/videos/Dreamy Soft Clouds.mp4" type="video/mp4">
-            <source src="assets/videos/Dreamy Soft Clouds.webm" type="video/webm">
-          </video>
+          <!-- Bottom (sky + ocean) — static image, Layer 1 -->
+          <img src="assets/images/hero-bottom-layer.webp" loading="eager" width="2048" data-parallax-layer="1" alt=""
+            class="parallax__layer-img">
 
           <!-- Animated Birds Sprite Sheet (Layer 1.5) -->
           <div data-parallax-layer="1.5" class="birds-parallax-wrapper">
-             <div class="bird-container bird-container-one"><div class="bird bird-one"></div></div>        
-             <div class="bird-container bird-container-two"><div class="bird bird-two"></div></div>  
-             <div class="bird-container bird-container-three"><div class="bird bird-three"></div></div> 
+             <div class="bird-container bird-container-one"><div class="bird bird-one"></div></div>
+             <div class="bird-container bird-container-two"><div class="bird bird-two"></div></div>
+             <div class="bird-container bird-container-three"><div class="bird bird-three"></div></div>
              <div class="bird-container bird-container-four"><div class="bird bird-four"></div></div>
              <div class="bird-container bird-container-five"><div class="bird bird-five"></div></div>
              <div class="bird-container bird-container-six"><div class="bird bird-six"></div></div>
@@ -54,8 +52,8 @@
              <div class="bird-container bird-container-eight"><div class="bird bird-eight"></div></div>
           </div>
 
-          <!-- Middle ground -->
-          <img src="assets/images/middle-layer.png" loading="eager" width="800" data-parallax-layer="2" alt=""
+          <!-- Middle ground (mountains + palms) — Layer 2 -->
+          <img src="assets/images/hero-middle-layer.webp" loading="eager" width="2048" data-parallax-layer="2" alt=""
             class="parallax__layer-img">
 
           <!-- Text Content -->
@@ -67,8 +65,8 @@
             </div>
           </div>
 
-          <!-- Foreground -->
-          <img src="assets/images/top-layer.png" loading="eager" width="800" data-parallax-layer="4" alt=""
+          <!-- Foreground (house + garden) — Layer 4 -->
+          <img src="assets/images/hero-top-layer.webp" loading="eager" width="2048" data-parallax-layer="4" alt=""
             class="parallax__layer-img">
         </div>
       </div>
@@ -97,19 +95,8 @@
     <div class="bg-vid vid-1 scene-orbit" id="sceneOrbit">
       <div class="orbit-stage">
         <svg class="orbit-svg" viewBox="-500 -500 1000 1000" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
-          <defs>
-            <!-- Animated wave/wobble filter for the orbit rings -->
-            <filter id="orbitWave" x="-20%" y="-20%" width="140%" height="140%">
-              <feTurbulence id="orbitWaveTurb" type="fractalNoise"
-                baseFrequency="0.008 0.008" numOctaves="2" seed="4" />
-              <feDisplacementMap id="orbitWaveMap" in="SourceGraphic" scale="0" />
-            </filter>
-          </defs>
-
-          <!-- Rippling orbit rings — each grows outward and fades. GSAP loops
-               and staggers them so ripples emit continuously from the center. -->
-          <g class="orbit-rings" fill="none" stroke="#111" stroke-width="1.2"
-             filter="url(#orbitWave)">
+          <!-- Rippling orbit rings — each grows outward and fades. -->
+          <g class="orbit-rings" fill="none" stroke="#111" stroke-width="1.2">
             <circle class="orbit-ripple" r="250" />
             <circle class="orbit-ripple" r="250" />
             <circle class="orbit-ripple" r="250" />
@@ -294,6 +281,16 @@
       { layer: "3", yPercent: 40 },
       { layer: "4", yPercent: 0 }
     ];
+    // Mobile centering: layers 2 & 4 use left:50% and need xPercent:-50 to
+    // stay centered. CSS transform can't do it because GSAP overwrites the
+    // transform property when animating yPercent.
+    const isMobileParallax = window.matchMedia('(max-width: 768px)').matches;
+    if (isMobileParallax) {
+      gsap.set(
+        triggerElement.querySelectorAll('[data-parallax-layer="2"], [data-parallax-layer="4"]'),
+        { xPercent: -50 }
+      );
+    }
     layers.forEach((layerObj, idx) => {
       tl.to(
         triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
@@ -403,14 +400,25 @@
 
       // Track the hero clouds <video> readiness.
       (function trackHeroVideo() {
-        const heroVid = document.querySelector('.parallax__layer-img[data-parallax-layer="1"]');
-        if (!heroVid || heroVid.tagName !== 'VIDEO') { heroVideoReady = true; updateLoader(); return; }
-        const onReady = () => { heroVideoReady = true; updateLoader(); };
-        if (heroVid.readyState >= 3) onReady();
-        else {
-          heroVid.addEventListener('canplaythrough', onReady, { once: true });
-          heroVid.addEventListener('loadeddata', onReady, { once: true });
-        }
+        // Wait for all three hero parallax images (layers 1, 2, 4) to fully load.
+        // Trees/mountains popping in after paint looks worse than a short loader.
+        const heroImgs = document.querySelectorAll(
+          '.parallax__layer-img[data-parallax-layer="1"],' +
+          '.parallax__layer-img[data-parallax-layer="2"],' +
+          '.parallax__layer-img[data-parallax-layer="4"]'
+        );
+        if (!heroImgs.length) { heroVideoReady = true; updateLoader(); return; }
+        let remaining = heroImgs.length;
+        const oneReady = () => {
+          if (--remaining <= 0) { heroVideoReady = true; updateLoader(); }
+        };
+        heroImgs.forEach((img) => {
+          if (img.complete && img.naturalWidth > 0) oneReady();
+          else {
+            img.addEventListener('load', oneReady, { once: true });
+            img.addEventListener('error', oneReady, { once: true });
+          }
+        });
       })();
 
       function preloadClip(ci, isCritical) {
@@ -492,18 +500,18 @@
         const scene = document.getElementById('sceneOrbit');
         if (!scene) return;
         const stage = scene.querySelector('.orbit-stage');
-        const waveMap = scene.querySelector('#orbitWaveMap');
-        const waveTurb = scene.querySelector('#orbitWaveTurb');
         const centerRing = scene.querySelector('.orbit-center-ring');
         const ripples = scene.querySelectorAll('.orbit-ripple');
         const canvas = document.getElementById('coin3dCanvas');
         if (!canvas) return;
 
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
         // --- Three.js scene setup ---
         const renderer = new THREE.WebGLRenderer({
-          canvas, alpha: true, antialias: true, powerPreference: 'high-performance'
+          canvas, alpha: true, antialias: !isMobile, powerPreference: 'high-performance'
         });
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+        // Aggressively cap DPR on mobile — retina pixels multiply GPU cost 4x
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, isMobile ? 1.25 : 2));
         renderer.toneMapping = THREE.ACESFilmicToneMapping;
         renderer.toneMappingExposure = 1.6;
         renderer.outputColorSpace = THREE.SRGBColorSpace;
@@ -528,8 +536,10 @@
         scene3.add(new THREE.AmbientLight(0xffffff, 0.4));
 
         // Build a coin as a cylinder oriented so its round faces point at ±Z
+        // Fewer radial segments on mobile — 96 was overkill even on desktop
+        const RADIAL_SEG = isMobile ? 32 : 64;
         function makeCoin(radius, thickness, letter) {
-          const geo = new THREE.CylinderGeometry(radius, radius, thickness, 96, 1);
+          const geo = new THREE.CylinderGeometry(radius, radius, thickness, RADIAL_SEG, 1);
           // Cylinder axis is +Y by default; rotate so it faces the camera
           geo.rotateX(Math.PI / 2);
 
@@ -584,8 +594,9 @@
           return tex;
         }
 
-        // 4 coins spread across the orbits, staggered angles
-        const coinDefs = [
+        // Coins spread across the orbits, staggered angles.
+        // Fewer meshes + fewer draw calls on mobile.
+        const allCoinDefs = [
           { r: 470, angle: 0,                size: 50, thickness: 12, spin: 1.6 },
           { r: 380, angle: Math.PI,          size: 38, thickness: 9,  spin: -1.3 },
           { r: 430, angle: Math.PI * 0.55,   size: 32, thickness: 8,  spin: 1.9 },
@@ -593,6 +604,7 @@
           { r: 450, angle: -Math.PI * 0.7,   size: 26, thickness: 7,  spin: 2.4 },
           { r: 360, angle: Math.PI * 0.28,   size: 34, thickness: 8,  spin: -1.7 }
         ];
+        const coinDefs = isMobile ? allCoinDefs.slice(0, 3) : allCoinDefs;
         const coins = coinDefs.map(def => {
           const mesh = makeCoin(def.size, def.thickness, '$');
           mesh.userData = def;
@@ -619,14 +631,42 @@
         resize();
         window.addEventListener('resize', resize);
 
-        // Idle spin (always on) — each coin at its own speed
-        function idleTick(now) {
-          const t = now * 0.001;
-          coins.forEach(c => { c.rotation.y = t * c.userData.spin; });
-          renderer.render(scene3, camera);
-          requestAnimationFrame(idleTick);
+        // Render loop gated on visibility + scene 1 being in view.
+        // WebGL is expensive; don't waste GPU when the user can't see it.
+        let isSceneVisible = true;
+        let isTabVisible = document.visibilityState === 'visible';
+        let rafId = null;
+        function tick(now) {
+          // Skip render if the scene has been faded out by the tunnel transition —
+          // once scene 2 takes over, drawing scene 1 is pure GPU waste.
+          const sceneOpacity = parseFloat(getComputedStyle(scene).opacity);
+          if (sceneOpacity > 0.01) {
+            const t = now * 0.001;
+            coins.forEach(c => { c.rotation.y = t * c.userData.spin; });
+            renderer.render(scene3, camera);
+          }
+          rafId = requestAnimationFrame(tick);
         }
-        requestAnimationFrame(idleTick);
+        function startLoop() {
+          if (rafId == null && isSceneVisible && isTabVisible) {
+            rafId = requestAnimationFrame(tick);
+          }
+        }
+        function stopLoop() {
+          if (rafId != null) { cancelAnimationFrame(rafId); rafId = null; }
+        }
+        // Observe scene visibility relative to the viewport
+        const io = new IntersectionObserver((entries) => {
+          isSceneVisible = entries[0].isIntersecting;
+          if (isSceneVisible) startLoop(); else stopLoop();
+        }, { threshold: 0.01 });
+        io.observe(scene);
+        // Tab visibility
+        document.addEventListener('visibilitychange', () => {
+          isTabVisible = document.visibilityState === 'visible';
+          if (isTabVisible) startLoop(); else stopLoop();
+        });
+        startLoop();
 
         // --- SVG ripples & center ring (unchanged from before) ---
         gsap.set(centerRing, { transformOrigin: '50% 50%' });
@@ -638,19 +678,6 @@
             { scale: 0.55, opacity: 0.45, duration: 0.5, ease: 'power1.out' })
             .to(ring, { scale: 1.9, opacity: 0, duration: 3.5, ease: 'power1.out' });
         });
-
-        // Continuous turbulence idle
-        let waveT = 0;
-        function tickWave() {
-          waveT += 0.006;
-          if (waveTurb) {
-            const bf = 0.006 + 0.0025 * Math.sin(waveT * 0.9);
-            waveTurb.setAttribute('baseFrequency', `${bf.toFixed(4)} ${bf.toFixed(4)}`);
-            waveTurb.setAttribute('seed', String(Math.floor(waveT * 7) % 999));
-          }
-          requestAnimationFrame(tickWave);
-        }
-        tickWave();
 
         function positionCoin(mesh, r, angle) {
           mesh.position.x = Math.cos(angle) * r;
@@ -664,7 +691,6 @@
         masterTl.to(scrubState, {
           p: 1, duration: 3, ease: 'none', onUpdate: () => {
             const p = scrubState.p;
-            if (waveMap) waveMap.setAttribute('scale', String(p * 26));
             // Each coin spirals inward; odd-indexed coins wind opposite direction
             coins.forEach((c, i) => {
               const dir = i % 2 === 0 ? 1 : -1;

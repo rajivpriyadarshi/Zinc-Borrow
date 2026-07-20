@@ -716,13 +716,14 @@ body, html {
   }
 
   /* Middle & foreground layers: cover portrait viewport without deforming.
-     They anchor to bottom and crop horizontally. */
+     They anchor to bottom and crop horizontally.
+     NOTE: horizontal centering uses left:50% + a JS-set xPercent:-50 so it
+     composes with GSAP's yPercent parallax without being overwritten. */
   .parallax__layer-img[data-parallax-layer="2"],
   .parallax__layer-img[data-parallax-layer="4"] {
     width: auto;
     height: 70%;
     left: 50%;
-    transform: translateX(-50%);
     max-width: none;
   }
 
