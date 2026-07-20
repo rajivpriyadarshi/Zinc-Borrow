@@ -707,7 +707,7 @@ body, html {
 .investors-logos li:nth-child(2) img { width: 116px; }  /* quona */
 .investors-logos li:nth-child(3) img { width: 55px; }   /* edbi */
 .investors-logos li:nth-child(4) img { width: 183px; }  /* global-ventures */
-.investors-logos li:nth-child(5) img { width: 24px; }   /* saison */
+.investors-logos li:nth-child(5) img { width: 48px; }   /* saison */
 
 @media (max-width: 768px) {
   .raised-headline p {
@@ -729,7 +729,7 @@ body, html {
   .investors-logos li:nth-child(2) img { width: 97px; }
   .investors-logos li:nth-child(3) img { width: 46px; }
   .investors-logos li:nth-child(4) img { width: 152px; }
-  .investors-logos li:nth-child(5) img { width: 20px; }
+  .investors-logos li:nth-child(5) img { width: 40px; }
 }
 
 /* Coins field (scattered across the section) */
