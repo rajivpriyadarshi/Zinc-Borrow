@@ -487,7 +487,7 @@
     const REPEL_RADIUS = 200;
     const REPEL_STRENGTH = 1800;
     const DAMPING = 0.96;
-    const ROT_DAMPING = 0.95;
+    const ROT_DAMPING = 0.9;
     const RESTITUTION = 0.85;   // bounciness on coin-coin collision (0..1)
     const WALL_RESTITUTION = 0.7;
 
@@ -515,7 +515,7 @@
           const force = (1 - mdist / REPEL_RADIUS) * REPEL_STRENGTH;
           s.vx += (mdx / mdist) * force * dt / 60;
           s.vy += (mdy / mdist) * force * dt / 60;
-          s.vrot += (mdx / mdist) * force * 0.015 * dt / 60;
+          s.vrot += (mdx / mdist) * force * 0.004 * dt / 60;
         }
 
         // Coin-coin elastic collision — impulse-based bounce
@@ -555,8 +555,8 @@
               // Spin from tangential component
               const tx = -ny, ty = nx;
               const tang = rvx * tx + rvy * ty;
-              s.vrot += tang * 0.6;
-              o.vrot -= tang * 0.6;
+              s.vrot += tang * 0.15;
+              o.vrot -= tang * 0.15;
             }
           }
         }
