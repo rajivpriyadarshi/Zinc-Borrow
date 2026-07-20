@@ -396,35 +396,19 @@
 
       symbols.forEach((sym, i) => {
         const size = Math.round(gsap.utils.random(COIN * 0.85, COIN * 1.1));
-        let homeX, homeY;
-
-        if (isMobile) {
-          // Random scatter across the entire section, avoiding overlaps
-          let tries = 0;
-          do {
-            homeX = gsap.utils.random(8, W - size - 8);
-            homeY = gsap.utils.random(8, H - size - 8);
-            tries++;
-            const ok = placed.every(p => {
-              const dx = (homeX + size / 2) - (p.homeX + p.size / 2);
-              const dy = (homeY + size / 2) - (p.homeY + p.size / 2);
-              return Math.hypot(dx, dy) > (size + p.size) * 0.6;
-            });
-            if (ok || tries > 40) break;
-          } while (true);
-        } else {
-          // Desktop: pile along the bottom
-          const perRow = Math.max(6, Math.floor(W / (COIN * 1.1)));
-          const row = Math.floor(idx / perRow);
-          const col = idx % perRow;
-          idx++;
-          const rowShift = row * (COIN * 0.5);
-          const slotW = (W - COIN) / (perRow - 1);
-          const baseX = col * slotW + gsap.utils.random(-COIN * 0.15, COIN * 0.15) + (row % 2 ? rowShift : -rowShift);
-          const stackY = H - size - 16 - row * (COIN * 0.75) + gsap.utils.random(-8, 8);
-          homeX = Math.max(8, Math.min(W - size - 8, baseX));
-          homeY = stackY;
-        }
+        // Pile along the bottom (mobile and desktop)
+        const perRow = isMobile
+          ? Math.max(3, Math.floor(W / (COIN * 1.1)))
+          : Math.max(6, Math.floor(W / (COIN * 1.1)));
+        const row = Math.floor(idx / perRow);
+        const col = idx % perRow;
+        idx++;
+        const rowShift = row * (COIN * 0.5);
+        const slotW = (W - COIN) / Math.max(1, perRow - 1);
+        const baseX = col * slotW + gsap.utils.random(-COIN * 0.15, COIN * 0.15) + (row % 2 ? rowShift : -rowShift);
+        const stackY = H - size - 16 - row * (COIN * 0.75) + gsap.utils.random(-8, 8);
+        const homeX = Math.max(8, Math.min(W - size - 8, baseX));
+        const homeY = stackY;
 
         placed.push({ homeX, homeY, size });
 
