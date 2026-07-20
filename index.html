@@ -478,8 +478,8 @@
       const H = floor.clientHeight;
       const isMobile = W < 768;
       const COIN = isMobile
-        ? Math.max(60, Math.min(90, Math.round(W / 6)))
-        : Math.max(110, Math.min(180, Math.round(W / 10)));
+        ? Math.max(50, Math.min(75, Math.round(W / 7)))
+        : Math.max(85, Math.min(140, Math.round(W / 13)));
 
       const symbols = SYMBOLS.slice().sort(() => Math.random() - 0.5);
       const placed = [];
