@@ -509,13 +509,14 @@ body, html {
 .founders-section {
   position: relative;
   background: #fff;
-  padding: 80px 24px 0 24px;
+  padding: 80px 24px 240px 24px;
   overflow: hidden;
-  height: 100vh;
-  height: 100svh;
+  min-height: 100vh;
+  min-height: 100svh;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  gap: 32px;
 }
 
 .founders-title {
@@ -614,6 +615,107 @@ body, html {
 
 .founder-info li {
   margin: 0;
+}
+
+/* Raised + investors block */
+.raised-block {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  align-items: center;
+  max-width: 1000px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.raised-headline {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  width: 100%;
+}
+
+.raised-headline p {
+  font-family: var(--font-sans);
+  font-size: 18px;
+  color: #292f2c;
+  letter-spacing: -0.6px;
+  line-height: 1.5;
+  margin: 0;
+  white-space: nowrap;
+}
+
+.raised-headline strong {
+  font-weight: 700;
+}
+
+.raised-line {
+  flex: 1;
+  max-width: 120px;
+  height: 1px;
+  background: #292f2c;
+  opacity: 0.6;
+}
+
+.investors-row {
+  display: flex;
+  align-items: center;
+  gap: 40px;
+  width: 100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.investors-label {
+  font-family: var(--font-sans);
+  font-weight: 500;
+  font-size: 20px;
+  color: #000;
+  white-space: nowrap;
+}
+
+.investors-logos {
+  display: flex;
+  align-items: center;
+  gap: 44px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  opacity: 0.55;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.investors-logos img {
+  display: block;
+  height: 26px;
+  width: auto;
+  object-fit: contain;
+}
+
+.investors-logos li:nth-child(3) img { height: 32px; }
+.investors-logos li:nth-child(5) img { height: 44px; }
+
+@media (max-width: 768px) {
+  .raised-headline p {
+    font-size: 14px;
+    white-space: normal;
+    text-align: center;
+  }
+  .raised-line { max-width: 40px; }
+  .investors-row {
+    gap: 20px;
+    flex-direction: column;
+  }
+  .investors-logos {
+    gap: 24px;
+  }
+  .investors-logos img { height: 20px; }
+  .investors-logos li:nth-child(3) img { height: 24px; }
+  .investors-logos li:nth-child(5) img { height: 32px; }
 }
 
 /* Coins field (scattered across the section) */

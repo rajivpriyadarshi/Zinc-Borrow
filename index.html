@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=30">
+  <link rel="stylesheet" href="style.css?v=31">
 </head>
 
 <body>
@@ -142,6 +142,25 @@
           </ul>
         </div>
       </article>
+    </div>
+
+    <!-- Raised + investors -->
+    <div class="raised-block">
+      <div class="raised-headline">
+        <span class="raised-line"></span>
+        <p><strong>Raised $25.5M (Seed round)</strong> — Backed by the best</p>
+        <span class="raised-line"></span>
+      </div>
+      <div class="investors-row">
+        <span class="investors-label">Our investors</span>
+        <ul class="investors-logos">
+          <li><img src="assets/investors/nexus.svg" alt="Nexus"></li>
+          <li><img src="assets/investors/quona.svg" alt="Quona"></li>
+          <li><img src="assets/investors/edbi.svg" alt="EDBI"></li>
+          <li><img src="assets/investors/global-ventures.svg" alt="Global Ventures"></li>
+          <li><img src="assets/investors/saison.svg" alt="Saison Capital"></li>
+        </ul>
+      </div>
     </div>
 
     <!-- Bouncing coins (populated by JS) -->
@@ -330,12 +349,15 @@
     if (!section) return;
     const title = section.querySelector('.founders-title');
     const cards = section.querySelectorAll('.founder-card');
-    gsap.set([title, ...cards], { opacity: 0, y: 40 });
+    const raised = section.querySelector('.raised-block');
+    const raisedItems = raised ? [raised] : [];
+    gsap.set([title, ...cards, ...raisedItems], { opacity: 0, y: 40 });
     gsap.timeline({
       scrollTrigger: { trigger: section, start: 'top 75%', once: true },
     })
       .to(title, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' })
-      .to(cards, { opacity: 1, y: 0, duration: 0.9, stagger: 0.15, ease: 'power3.out' }, '-=0.5');
+      .to(cards, { opacity: 1, y: 0, duration: 0.9, stagger: 0.15, ease: 'power3.out' }, '-=0.5')
+      .to(raisedItems, { opacity: 1, y: 0, duration: 0.9, ease: 'power3.out' }, '-=0.4');
 
     // Mouse-tilt: 3D rotate each card based on cursor position within its bounds
     cards.forEach((card) => {
