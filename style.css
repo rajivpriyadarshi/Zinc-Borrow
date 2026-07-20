@@ -719,25 +719,19 @@ body, html {
     height: 100%;
   }
 
-  /* Background clouds video: cover the viewport, cropped to fit */
-  .parallax__layer-img[data-parallax-layer="1"] {
+  /* All three parallax image layers are 2048x2048 pre-composited squares
+     designed to stack. On mobile we cover the viewport with all of them so
+     the layered composition holds regardless of aspect ratio. */
+  .parallax__layer-img[data-parallax-layer="1"],
+  .parallax__layer-img[data-parallax-layer="2"],
+  .parallax__layer-img[data-parallax-layer="4"] {
     position: absolute;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
-  }
-
-  /* Middle & foreground layers: cover portrait viewport without deforming.
-     They anchor to bottom and crop horizontally.
-     NOTE: horizontal centering uses left:50% + a JS-set xPercent:-50 so it
-     composes with GSAP's yPercent parallax without being overwritten. */
-  .parallax__layer-img[data-parallax-layer="2"],
-  .parallax__layer-img[data-parallax-layer="4"] {
-    width: auto;
-    height: 70%;
-    left: 50%;
+    object-position: bottom center;
     max-width: none;
   }
 

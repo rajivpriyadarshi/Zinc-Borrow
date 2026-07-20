@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=60">
+  <link rel="stylesheet" href="style.css?v=61">
   <script>document.documentElement.classList.add('is-loading');</script>
 </head>
 
@@ -283,16 +283,8 @@
       { layer: "3", yPercent: 40 },
       { layer: "4", yPercent: 0 }
     ];
-    // Mobile centering: layers 2 & 4 use left:50% and need xPercent:-50 to
-    // stay centered. CSS transform can't do it because GSAP overwrites the
-    // transform property when animating yPercent.
-    const isMobileParallax = window.matchMedia('(max-width: 768px)').matches;
-    if (isMobileParallax) {
-      gsap.set(
-        triggerElement.querySelectorAll('[data-parallax-layer="2"], [data-parallax-layer="4"]'),
-        { xPercent: -50 }
-      );
-    }
+    // (Mobile no longer uses left:50% centering — the layers are now
+    // object-fit: cover across the full viewport, so no xPercent offset.)
     layers.forEach((layerObj, idx) => {
       tl.to(
         triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
