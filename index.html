@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=65">
+  <link rel="stylesheet" href="style.css?v=67">
   <script>document.documentElement.classList.add('is-loading');</script>
 </head>
 
@@ -65,9 +65,14 @@
           <!-- Text Content -->
           <div data-parallax-layer="3" class="parallax__layer-title">
             <div class="hero-text-container">
-              <h1 class="parallax__title">Where your <i>global<br>wealth</i> belongs</h1>
-              <p class="parallax__subtitle">For founders, builders, product leaders, and technology<br>professionals
-                whose wealth crossed borders</p>
+              <h1 class="parallax__title">
+                <span class="hero-line"><span class="hero-line__inner">Where your <i>global</i></span></span>
+                <span class="hero-line"><span class="hero-line__inner"><i>wealth</i> belongs</span></span>
+              </h1>
+              <p class="parallax__subtitle">
+                <span class="hero-line"><span class="hero-line__inner">For founders, builders, product leaders, and technology</span></span>
+                <span class="hero-line"><span class="hero-line__inner">professionals whose wealth crossed borders</span></span>
+              </p>
             </div>
           </div>
 
@@ -397,6 +402,30 @@
         }
       }
 
+      function playHeroIntro() {
+        // Line-mask reveal for title + subtitle, plus a subtle hero zoom-out.
+        const lines = document.querySelectorAll('.hero-text-container .hero-line__inner');
+        const heroImgs = document.querySelectorAll('.parallax__layer-img');
+        // Fallback class so text is visible even if GSAP fails
+        document.documentElement.classList.add('hero-intro-ready');
+        if (lines.length && window.gsap) {
+          gsap.set(lines, { yPercent: 110 });
+          gsap.set(heroImgs, { scale: 1.06, transformOrigin: '50% 50%' });
+          const tl = gsap.timeline({ delay: 0.1 });
+          tl.to(heroImgs, {
+            scale: 1,
+            duration: 1.6,
+            ease: 'power3.out'
+          }, 0);
+          tl.to(lines, {
+            yPercent: 0,
+            duration: 1.1,
+            ease: 'power3.out',
+            stagger: 0.12
+          }, 0.15);
+        }
+      }
+
       function revealSite() {
         if (loaderFill) loaderFill.style.width = '100%';
         startBg();
@@ -408,17 +437,26 @@
             loaderEl.addEventListener('transitionend', () => loaderEl.remove(), { once: true });
           }
           if (window.ScrollTrigger) ScrollTrigger.refresh();
+          playHeroIntro();
         }, 250);
       }
 
-      // Hard timeout: reveal after 15s regardless. Slow networks shouldn't leave
-      // the user staring at a bar forever; the site can degrade gracefully.
+      // Slow-network fallback: if scene-2 frames are still loading after 20s
+      // but hero images are ready, reveal anyway (scenes fill in as user scrolls).
+      // NEVER reveal without the hero images, or the page looks broken.
+      // Absolute ceiling of 45s to protect against total failure.
+      setTimeout(() => {
+        if (!criticalDone && heroImagesLoaded >= heroImagesTotal) {
+          criticalDone = true;
+          revealSite();
+        }
+      }, 20000);
       setTimeout(() => {
         if (!criticalDone) {
           criticalDone = true;
           revealSite();
         }
-      }, 15000);
+      }, 45000);
 
       // Wait for all three hero parallax images (layers 1, 2, 4) to fully
       // download AND decode. Using img.decode() where available guarantees
