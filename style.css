@@ -689,15 +689,25 @@ body, html {
   justify-content: center;
 }
 
+.investors-logos li {
+  display: flex;
+  align-items: center;
+  height: 24px;
+}
+
 .investors-logos img {
   display: block;
-  height: 26px;
+  height: 24px;
   width: auto;
   object-fit: contain;
 }
 
-.investors-logos li:nth-child(3) img { height: 32px; }
-.investors-logos li:nth-child(5) img { height: 44px; }
+/* Explicit widths derived from each SVG's viewBox to preserve aspect ratio */
+.investors-logos li:nth-child(1) img { width: 119px; }  /* nexus */
+.investors-logos li:nth-child(2) img { width: 116px; }  /* quona */
+.investors-logos li:nth-child(3) img { width: 55px; }   /* edbi */
+.investors-logos li:nth-child(4) img { width: 183px; }  /* global-ventures */
+.investors-logos li:nth-child(5) img { width: 24px; }   /* saison */
 
 @media (max-width: 768px) {
   .raised-headline p {
@@ -713,9 +723,13 @@ body, html {
   .investors-logos {
     gap: 24px;
   }
+  .investors-logos li { height: 20px; }
   .investors-logos img { height: 20px; }
-  .investors-logos li:nth-child(3) img { height: 24px; }
-  .investors-logos li:nth-child(5) img { height: 32px; }
+  .investors-logos li:nth-child(1) img { width: 99px; }
+  .investors-logos li:nth-child(2) img { width: 97px; }
+  .investors-logos li:nth-child(3) img { width: 46px; }
+  .investors-logos li:nth-child(4) img { width: 152px; }
+  .investors-logos li:nth-child(5) img { width: 20px; }
 }
 
 /* Coins field (scattered across the section) */
