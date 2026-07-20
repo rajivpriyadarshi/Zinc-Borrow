@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=39">
+  <link rel="stylesheet" href="style.css?v=42">
 </head>
 
 <body>
@@ -258,34 +258,29 @@
 
       // ------------------------------------------------------------------
       // Frame-sequence scrubbing (replaces <video> currentTime scrubbing).
-      // Each clip is a folder of 30 WebP frames. We preload each clip's
-      // Image objects and draw the active frame to that clip's <canvas>.
-      // Bulletproof on iOS Safari: no video decoder gymnastics.
+      // Each clip is a folder of native-fps WebP frames (lossless q=100).
+      // We preload each clip's Image objects and draw the active frame to
+      // that clip's <canvas>. Bulletproof on iOS Safari: no video decoder.
       // ------------------------------------------------------------------
-      const FRAMES_PER_CLIP = 30;
+      // Per-clip frame counts (mirrors the actual files on disk)
+      const FRAME_COUNTS = [125, 125, 125, 126, 121];
       const frameSet = (window.matchMedia && window.matchMedia('(max-width: 768px)').matches)
         ? 'mobile' : 'desktop';
       const clipIds = ['01', '02', '03', '04', '05'];
       const canvases = clipIds.map((_, j) => document.querySelector(`.vid-${j + 1}`));
-      const ctxs = canvases.map((c) => {
-        if (!c) return null;
-        const ctx = c.getContext('2d');
-        ctx.imageSmoothingEnabled = true;
-        ctx.imageSmoothingQuality = 'high';
-        return ctx;
-      });
-      const frames = clipIds.map(() => new Array(FRAMES_PER_CLIP));
+      const ctxs = canvases.map((c) => c ? c.getContext('2d') : null);
+      const frames = clipIds.map((_, i) => new Array(FRAME_COUNTS[i]));
       const clipReady = clipIds.map(() => false);
       const targetFrame = clipIds.map(() => 0);
       const currentFrame = clipIds.map(() => -1);
 
-      function sizeCanvas(canvas, img) {
+      // Canvas backing store = source image native size. CSS handles the on-screen
+      // upscale via object-fit: cover, using the browser's native scaler (same code
+      // path as <video>/<img>). Avoids double scaling and matches the video framing.
+      function sizeCanvasToImg(canvas, img) {
         if (!canvas || !img) return;
-        const dpr = Math.min(window.devicePixelRatio || 1, 2);
-        const w = canvas.clientWidth || canvas.parentElement.clientWidth;
-        const h = canvas.clientHeight || canvas.parentElement.clientHeight;
-        canvas.width = Math.round(w * dpr);
-        canvas.height = Math.round(h * dpr);
+        if (canvas.width !== img.naturalWidth) canvas.width = img.naturalWidth;
+        if (canvas.height !== img.naturalHeight) canvas.height = img.naturalHeight;
       }
 
       function drawFrame(clipIdx, frameIdx) {
@@ -293,49 +288,38 @@
         const ctx = ctxs[clipIdx];
         const img = frames[clipIdx][frameIdx];
         if (!canvas || !ctx || !img || !img.complete) return;
-        if (canvas.width === 0 || canvas.height === 0) sizeCanvas(canvas, img);
-        // object-fit: cover math
-        const cw = canvas.width, ch = canvas.height;
-        const iw = img.naturalWidth, ih = img.naturalHeight;
-        const scale = Math.max(cw / iw, ch / ih);
-        const dw = iw * scale, dh = ih * scale;
-        const dx = (cw - dw) / 2, dy = (ch - dh) / 2;
-        ctx.drawImage(img, dx, dy, dw, dh);
+        sizeCanvasToImg(canvas, img);
+        ctx.drawImage(img, 0, 0);
         currentFrame[clipIdx] = frameIdx;
       }
 
-      // Preload every frame of every clip. Small enough (~4MB mobile / ~10MB desktop) that
-      // we can just eat it upfront rather than staging by scroll position.
-      clipIds.forEach((cid, ci) => {
+      // Preload every frame of every clip. Larger payload than before (~44MB
+      // mobile / ~74MB desktop for full native-fps + q=100), so we kick off
+      // clip 1 immediately and stagger the rest to avoid saturating the
+      // connection on the initial load.
+      function preloadClip(ci) {
+        const cid = clipIds[ci];
+        const count = FRAME_COUNTS[ci];
         let loaded = 0;
-        for (let fi = 0; fi < FRAMES_PER_CLIP; fi++) {
+        for (let fi = 0; fi < count; fi++) {
           const img = new Image();
-          const num = String(fi + 1).padStart(2, '0');
+          const num = String(fi + 1).padStart(3, '0');
           img.decoding = 'async';
           img.src = `assets/frames/${frameSet}/${cid}/frame_${num}.webp`;
           img.onload = () => {
             loaded++;
-            if (fi === 0 && ci === 0) {
-              // First frame of first clip: draw immediately so the scene isn't blank.
-              sizeCanvas(canvases[0], img);
-              drawFrame(0, 0);
-            }
-            if (loaded === FRAMES_PER_CLIP) clipReady[ci] = true;
+            if (fi === 0 && ci === 0) drawFrame(0, 0);
+            if (loaded === count) clipReady[ci] = true;
           };
           frames[ci][fi] = img;
         }
-      });
+      }
+      // Clip 0 up front; clips 1..4 staggered by 400ms so the first paint isn't blocked.
+      preloadClip(0);
+      for (let ci = 1; ci < clipIds.length; ci++) {
+        setTimeout(() => preloadClip(ci), ci * 400);
+      }
 
-      // Resize handler: rebuild canvas backing store on viewport changes.
-      window.addEventListener('resize', () => {
-        canvases.forEach((c, i) => {
-          const f = frames[i][Math.max(0, currentFrame[i])];
-          if (c && f && f.complete) {
-            sizeCanvas(c, f);
-            drawFrame(i, Math.max(0, currentFrame[i]));
-          }
-        });
-      });
 
       const masterTl = gsap.timeline({
         scrollTrigger: {
@@ -359,9 +343,10 @@
           duration,
           ease: "none",
           onUpdate: () => {
+            const count = FRAME_COUNTS[clipIdx];
             targetFrame[clipIdx] = Math.min(
-              FRAMES_PER_CLIP - 1,
-              Math.round(proxy.progress * (FRAMES_PER_CLIP - 1))
+              count - 1,
+              Math.round(proxy.progress * (count - 1))
             );
           }
         }, startTime);
