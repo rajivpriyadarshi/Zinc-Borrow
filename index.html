@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=63">
+  <link rel="stylesheet" href="style.css?v=65">
   <script>document.documentElement.classList.add('is-loading');</script>
 </head>
 
@@ -36,9 +36,12 @@
     <section class="parallax__header">
       <div class="parallax__visuals">
         <div data-parallax-layers class="parallax__layers">
-          <!-- Bottom (sky + ocean) — static image, Layer 1 -->
-          <img src="assets/images/hero-bottom-layer.webp" loading="eager" width="2048" data-parallax-layer="1" alt=""
-            class="parallax__layer-img">
+          <!-- Bottom (sky + ocean) — Layer 1 -->
+          <picture>
+            <source media="(max-width: 768px)" srcset="assets/images/hero-bottom-layer-mobile.webp">
+            <img src="assets/images/hero-bottom-layer.webp" loading="eager" width="2048" data-parallax-layer="1" alt=""
+              class="parallax__layer-img">
+          </picture>
 
           <!-- Animated Birds Sprite Sheet (Layer 1.5) -->
           <div data-parallax-layer="1.5" class="birds-parallax-wrapper">
@@ -53,8 +56,11 @@
           </div>
 
           <!-- Middle ground (mountains + palms) — Layer 2 -->
-          <img src="assets/images/hero-middle-layer.webp" loading="eager" width="2048" data-parallax-layer="2" alt=""
-            class="parallax__layer-img">
+          <picture>
+            <source media="(max-width: 768px)" srcset="assets/images/hero-middle-layer-mobile.webp">
+            <img src="assets/images/hero-middle-layer.webp" loading="eager" width="2048" data-parallax-layer="2" alt=""
+              class="parallax__layer-img">
+          </picture>
 
           <!-- Text Content -->
           <div data-parallax-layer="3" class="parallax__layer-title">
@@ -66,8 +72,11 @@
           </div>
 
           <!-- Foreground (house + garden) — Layer 4 -->
-          <img src="assets/images/hero-top-layer.webp" loading="eager" width="2048" data-parallax-layer="4" alt=""
-            class="parallax__layer-img">
+          <picture>
+            <source media="(max-width: 768px)" srcset="assets/images/hero-top-layer-mobile.webp">
+            <img src="assets/images/hero-top-layer.webp" loading="eager" width="2048" data-parallax-layer="4" alt=""
+              class="parallax__layer-img">
+          </picture>
         </div>
       </div>
       <!-- Bottom-edge separator: fades the hero into the white section below -->
@@ -267,40 +276,46 @@
   // Register GSAP Plugins
   gsap.registerPlugin(ScrollTrigger);
   
-  // Parallax Layers — disabled on mobile.
-  // Reason: on iOS Safari, scroll-driven yPercent transforms across three
-  // stacked 2048² image layers trigger CPU raster every scroll pixel, which
-  // reads as choppy. The tiny vertical parallax isn't worth the jank on a
-  // phone; on desktop it stays.
+  // Parallax Layers — Apple-style tuning:
+  // - Smoothed scrub decouples the transform from raw scroll frequency (kills iOS jitter)
+  // - Mobile uses smaller yPercent ranges + serves 1200w images via <picture> so the GPU
+  //   has ~3x fewer pixels to composite per layer.
   const isMobileHero = window.matchMedia('(max-width: 768px)').matches;
-  if (!isMobileHero) {
-    document.querySelectorAll('[data-parallax-layers]').forEach((triggerElement) => {
-      let tl = gsap.timeline({
-        scrollTrigger: {
-          trigger: triggerElement,
-          start: "0% 0%",
-          end: "100% 0%",
-          scrub: 0.5
-        }
-      });
-      const layers = [
+  const heroLayers = isMobileHero
+    ? [
+        { layer: "1", yPercent: 20 },
+        { layer: "2", yPercent: 14 },
+        { layer: "3", yPercent: 8 },
+        { layer: "4", yPercent: 0 }
+      ]
+    : [
         { layer: "1", yPercent: 70 },
         { layer: "2", yPercent: 55 },
         { layer: "3", yPercent: 40 },
         { layer: "4", yPercent: 0 }
       ];
-      layers.forEach((layerObj, idx) => {
-        tl.to(
-          triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
-          {
-            yPercent: layerObj.yPercent,
-            ease: "none"
-          },
-          idx === 0 ? undefined : "<"
-        );
-      });
+  document.querySelectorAll('[data-parallax-layers]').forEach((triggerElement) => {
+    let tl = gsap.timeline({
+      scrollTrigger: {
+        trigger: triggerElement,
+        start: "0% 0%",
+        end: "100% 0%",
+        // Smoothed scrub — GSAP interpolates on RAF instead of jumping on
+        // every scroll event. Higher = smoother but more lag.
+        scrub: isMobileHero ? 0.6 : 0.4
+      }
     });
-  }
+    heroLayers.forEach((layerObj, idx) => {
+      tl.to(
+        triggerElement.querySelectorAll(`[data-parallax-layer="${layerObj.layer}"]`),
+        {
+          yPercent: layerObj.yPercent,
+          ease: "none"
+        },
+        idx === 0 ? undefined : "<"
+      );
+    });
+  });
   
   // Liquid Glass & Tunnel Sequence
   (async function initLiquidGlass() {
@@ -356,19 +371,27 @@
       const CRITICAL_CLIPS = [1];
       const criticalFramesTotal = CRITICAL_CLIPS.reduce((s, ci) => s + FRAME_COUNTS[ci], 0);
       let criticalFramesLoaded = 0;
-      let heroVideoReady = false;
+      let heroImagesLoaded = 0;
+      let heroImagesTotal = 3; // layers 1, 2, 4 — set for real inside trackHeroVideo
       let criticalDone = false;
 
       const loaderEl = document.getElementById('siteLoader');
       const loaderFill = document.getElementById('siteLoaderFill');
 
       function updateLoader() {
-        // Weight: hero video worth 15%, critical frames worth 85%
+        // Hero images are what the user actually sees behind the loader.
+        // Weight them at 60% so the bar accurately reflects visible readiness.
+        // Scene-2 frame preload is background work (40%) — it primes the
+        // scroll experience but isn't visible when the loader hides.
+        const heroPct = heroImagesTotal ? (heroImagesLoaded / heroImagesTotal) : 1;
         const framePct = criticalFramesTotal ? (criticalFramesLoaded / criticalFramesTotal) : 1;
-        const heroPct = heroVideoReady ? 1 : 0;
-        const pct = Math.min(1, heroPct * 0.15 + framePct * 0.85);
+        const pct = Math.min(1, heroPct * 0.6 + framePct * 0.4);
         if (loaderFill) loaderFill.style.width = (pct * 100).toFixed(1) + '%';
-        if (!criticalDone && heroVideoReady && criticalFramesLoaded >= criticalFramesTotal) {
+        // Only reveal when ALL hero images are actually decoded AND scene-2
+        // has enough frames to start scrubbing.
+        if (!criticalDone
+            && heroImagesLoaded >= heroImagesTotal
+            && criticalFramesLoaded >= criticalFramesTotal) {
           criticalDone = true;
           revealSite();
         }
@@ -397,25 +420,34 @@
         }
       }, 15000);
 
-      // Track the hero clouds <video> readiness.
-      (function trackHeroVideo() {
-        // Wait for all three hero parallax images (layers 1, 2, 4) to fully load.
-        // Trees/mountains popping in after paint looks worse than a short loader.
+      // Wait for all three hero parallax images (layers 1, 2, 4) to fully
+      // download AND decode. Using img.decode() where available guarantees
+      // the pixel data is ready — plain 'load' only guarantees bytes received.
+      (function trackHeroImages() {
         const heroImgs = document.querySelectorAll(
           '.parallax__layer-img[data-parallax-layer="1"],' +
           '.parallax__layer-img[data-parallax-layer="2"],' +
           '.parallax__layer-img[data-parallax-layer="4"]'
         );
-        if (!heroImgs.length) { heroVideoReady = true; updateLoader(); return; }
-        let remaining = heroImgs.length;
-        const oneReady = () => {
-          if (--remaining <= 0) { heroVideoReady = true; updateLoader(); }
-        };
+        heroImagesTotal = heroImgs.length || 1;
+        if (!heroImgs.length) { heroImagesLoaded = 1; updateLoader(); return; }
         heroImgs.forEach((img) => {
-          if (img.complete && img.naturalWidth > 0) oneReady();
-          else {
-            img.addEventListener('load', oneReady, { once: true });
-            img.addEventListener('error', oneReady, { once: true });
+          const markReady = () => {
+            heroImagesLoaded++;
+            updateLoader();
+          };
+          const awaitDecode = () => {
+            if (typeof img.decode === 'function') {
+              img.decode().then(markReady, markReady);
+            } else {
+              markReady();
+            }
+          };
+          if (img.complete && img.naturalWidth > 0) {
+            awaitDecode();
+          } else {
+            img.addEventListener('load', awaitDecode, { once: true });
+            img.addEventListener('error', markReady, { once: true });
           }
         });
       })();
