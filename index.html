@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=68">
+  <link rel="stylesheet" href="style.css?v=69">
   <script>document.documentElement.classList.add('is-loading');</script>
 </head>
 
@@ -55,14 +55,8 @@
              <div class="bird-container bird-container-eight"><div class="bird bird-eight"></div></div>
           </div>
 
-          <!-- Middle ground (mountains + palms) — Layer 2 -->
-          <picture>
-            <source media="(max-width: 768px)" srcset="assets/images/hero-middle-layer-mobile.webp">
-            <img src="assets/images/hero-middle-layer.webp" loading="eager" width="2048" data-parallax-layer="2" alt=""
-              class="parallax__layer-img">
-          </picture>
-
           <!-- Text Content -->
+          <!-- (Middle-layer image removed — mountains are now baked into the top layer.) -->
           <div data-parallax-layer="3" class="parallax__layer-title">
             <div class="hero-text-container">
               <h1 class="parallax__title">
@@ -286,16 +280,15 @@
   // - Mobile uses smaller yPercent ranges + serves 1200w images via <picture> so the GPU
   //   has ~3x fewer pixels to composite per layer.
   const isMobileHero = window.matchMedia('(max-width: 768px)').matches;
+  // Only two image layers now (bottom sky+ocean and top mountain+house) plus text.
   const heroLayers = isMobileHero
     ? [
         { layer: "1", yPercent: 20 },
-        { layer: "2", yPercent: 14 },
         { layer: "3", yPercent: 8 },
         { layer: "4", yPercent: 0 }
       ]
     : [
         { layer: "1", yPercent: 70 },
-        { layer: "2", yPercent: 55 },
         { layer: "3", yPercent: 40 },
         { layer: "4", yPercent: 0 }
       ];
@@ -377,7 +370,7 @@
       const criticalFramesTotal = CRITICAL_CLIPS.reduce((s, ci) => s + FRAME_COUNTS[ci], 0);
       let criticalFramesLoaded = 0;
       let heroImagesLoaded = 0;
-      let heroImagesTotal = 3; // layers 1, 2, 4 — set for real inside trackHeroVideo
+      let heroImagesTotal = 2; // layers 1 and 4 — set for real inside trackHeroImages
       let criticalDone = false;
 
       const loaderEl = document.getElementById('siteLoader');
@@ -464,7 +457,6 @@
       (function trackHeroImages() {
         const heroImgs = document.querySelectorAll(
           '.parallax__layer-img[data-parallax-layer="1"],' +
-          '.parallax__layer-img[data-parallax-layer="2"],' +
           '.parallax__layer-img[data-parallax-layer="4"]'
         );
         heroImagesTotal = heroImgs.length || 1;
