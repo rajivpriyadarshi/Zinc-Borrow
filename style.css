@@ -429,37 +429,106 @@ body, html {
   visibility: visible;
 }
 
-/* Scene 1: SVG orbital rings + HTML 3D coins (replaces vid-1 canvas) */
-#liquid-root .scene-orbit {
+/* Scene 1: flowers/grass video sequence + separators (coin is baked into the video) */
+#liquid-root .scene-flowers {
   background: #fff;
+  background-color: #fff;
   opacity: 1;
   visibility: visible;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  overflow: hidden;
 }
-#liquid-root .scene-orbit .orbit-stage {
-  position: relative;
-  width: min(100vh, 100vw);
-  height: min(100vh, 100vw);
-  perspective: 1400px;
-  transform-style: preserve-3d;
-}
-#liquid-root .scene-orbit .orbit-svg {
+#liquid-root .scene-flowers .scene-flowers__canvas {
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  overflow: visible;
+  object-fit: cover;
+  display: block;
+}
+/* Top separator: white → light blue vertical gradient (from Figma). Sits over
+   the top of the video to help the heading read against foliage. */
+#liquid-root .scene-flowers .scene-flowers__top-separator {
+  position: absolute;
+  left: 0; right: 0; top: 0;
+  height: 40%;
+  background: linear-gradient(180deg,
+    rgba(255,255,255,1) 0%,
+    rgba(255,255,255,0.85) 45%,
+    rgba(205, 226, 235, 0) 100%);
+  pointer-events: none;
+  z-index: 2;
+}
+/* Bottom separator: fog/ground image that fades the video into whatever's below */
+#liquid-root .scene-flowers .scene-flowers__bottom-separator {
+  position: absolute;
+  left: 0; right: 0; bottom: -1px;
+  width: 100%;
+  z-index: 4;
+  pointer-events: none;
+  opacity: 0.5;
+}
+#liquid-root .scene-flowers .scene-flowers__bottom-separator img {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+@media (max-width: 768px) {
+  #liquid-root .scene-flowers .scene-flowers__top-separator {
+    height: 45%;
+  }
 }
 
-/* Three.js canvas for the 3D coins — overlays the whole stage */
-.coin3d-canvas {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
+/* Scene 1 heading — full-width, vertically centered, huge display type */
+.circle-1--flowers {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  width: 100% !important;
+  height: auto !important;
+  margin: 0 !important;
+  top: 50% !important;
+  left: 50% !important;
+  transform: translate(-50%, -50%) !important;
+  padding: 0 3vw !important;
+  max-width: none !important;
+  z-index: 20;
+  /* Let the h2's mix-blend-mode reach the video canvas below */
+  isolation: auto !important;
+  will-change: auto !important;
+}
+.circle-1--flowers h2 {
+  font-family: var(--font-serif) !important;
+  font-weight: 400 !important;
+  font-size: clamp(3rem, 7.5vw, 100px) !important;
+  line-height: 1.02 !important;
+  letter-spacing: -0.04em !important;
+  margin: 0 !important;
+  text-align: center;
+  /* Warm dark brown — dark enough to read as premium, still light enough for
+     multiply to visibly blend with the coin/rocks below. */
+  color: #3d2b14;
+  mix-blend-mode: multiply;
+  /* Metallic lift: subtle highlight on top edge of letters + a soft warm
+     shadow below/behind. Reads as embossed print on the scene. */
+  text-shadow:
+    0 1px 0 rgba(255, 245, 220, 0.35),         /* thin top highlight */
+    0 2px 0 rgba(255, 235, 200, 0.18),         /* second highlight for depth */
+    0 8px 24px rgba(60, 35, 10, 0.28),         /* medium warm shadow */
+    0 20px 48px rgba(40, 25, 8, 0.22);         /* soft floor shadow */
+}
+.circle-1--flowers .flowers-line {
+  display: block;
+}
+.circle-1--flowers .flowers-word {
+  display: inline-block;
+  will-change: transform, opacity;
+}
+@media (max-width: 768px) {
+  .circle-1--flowers h2 {
+    font-size: clamp(2.5rem, 14vw, 68px) !important;
+  }
 }
 
 /* Glass Circles — single consolidated rule */
@@ -1108,4 +1177,191 @@ body, html {
   .founder-role { font-size: 14px; }
   .founder-info ul { font-size: 13px; }
   .coins-floor { display: none; }
+}
+
+/* ============================================================
+   Interest form modal
+   ============================================================ */
+.interest-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+  box-sizing: border-box;
+}
+.interest-modal.is-open {
+  display: flex;
+}
+.interest-modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(10, 10, 10, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  opacity: 0;
+  transition: opacity 0.35s ease;
+}
+.interest-modal.is-open .interest-modal__backdrop { opacity: 1; }
+.interest-modal__card {
+  position: relative;
+  width: 100%;
+  max-width: 480px;
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+  transform: translateY(20px) scale(0.98);
+  opacity: 0;
+  transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.35s ease;
+}
+.interest-modal.is-open .interest-modal__card {
+  transform: translateY(0) scale(1);
+  opacity: 1;
+}
+.interest-modal__close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: none;
+  background: transparent;
+  font-size: 28px;
+  line-height: 1;
+  color: #666;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, color 0.2s;
+}
+.interest-modal__close:hover {
+  background: rgba(0, 0, 0, 0.06);
+  color: #000;
+}
+.interest-modal__body {
+  padding: 36px 32px 32px;
+}
+.interest-modal__title {
+  font-family: var(--font-serif);
+  font-weight: 400;
+  font-size: 32px;
+  letter-spacing: -1px;
+  line-height: 1.15;
+  margin: 0 0 8px 0;
+  color: #111;
+}
+.interest-modal__lede {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  color: #666;
+  margin: 0 0 24px 0;
+}
+.interest-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.interest-form__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.interest-form__label {
+  font-family: var(--font-sans);
+  font-size: 13px;
+  font-weight: 500;
+  color: #333;
+  letter-spacing: -0.1px;
+}
+.interest-form input,
+.interest-form select {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  color: #111;
+  background: #fafafa;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 10px;
+  padding: 12px 14px;
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  width: 100%;
+  box-sizing: border-box;
+}
+.interest-form input:focus,
+.interest-form select:focus {
+  border-color: #111;
+  background: #fff;
+}
+.interest-form input:invalid:not(:placeholder-shown) {
+  border-color: #c94a2b;
+}
+.interest-form__select-wrap {
+  position: relative;
+}
+.interest-form__select-wrap::after {
+  content: "";
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid #555;
+  border-bottom: 2px solid #555;
+  transform: translateY(-70%) rotate(45deg);
+  pointer-events: none;
+}
+.interest-form select {
+  appearance: none;
+  -webkit-appearance: none;
+  padding-right: 40px;
+  cursor: pointer;
+}
+.interest-form__submit {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+  background: #000;
+  border: none;
+  border-radius: 100px;
+  padding: 14px 20px;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.interest-form__submit:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+.interest-form__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+.interest-form__status {
+  font-family: var(--font-sans);
+  font-size: 14px;
+  margin: 0;
+  min-height: 20px;
+  text-align: center;
+  color: #444;
+}
+.interest-form__status.is-success { color: #1d7a3b; }
+.interest-form__status.is-error { color: #c94a2b; }
+
+/* Prevent background scroll when modal is open */
+html.interest-modal-open, body.interest-modal-open {
+  overflow: hidden;
+}
+
+@media (max-width: 600px) {
+  .interest-modal__body { padding: 28px 22px 24px; }
+  .interest-modal__title { font-size: 26px; }
+  .interest-modal__lede { font-size: 14px; margin-bottom: 20px; }
 }
