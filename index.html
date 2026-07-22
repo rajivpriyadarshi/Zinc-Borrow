@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=89">
+  <link rel="stylesheet" href="style.css?v=90">
   <script>document.documentElement.classList.add('is-loading');</script>
 </head>
 
@@ -354,7 +354,7 @@
       // that clip's <canvas>. Bulletproof on iOS Safari: no video decoder.
       // ------------------------------------------------------------------
       // Per-clip frame counts (0 means "not an image sequence — SVG/HTML scene")
-      const FRAME_COUNTS = [150, 125, 122, 63, 76];
+      const FRAME_COUNTS = [150, 153, 153, 76, 63];
       const frameSet = (window.matchMedia && window.matchMedia('(max-width: 768px)').matches)
         ? 'mobile' : 'desktop';
       const clipIds = ['01', '02', '03', '04', '05'];
@@ -513,7 +513,7 @@
       // Cache-buster for frame URLs. Bump when clip content changes so browsers
       // don't serve stale WebPs from a previous batch that had a different
       // frame count or different video source.
-      const FRAMES_CACHE_VER = 5;
+      const FRAMES_CACHE_VER = 9;
 
       function preloadClip(ci, isCritical) {
         const cid = clipIds[ci];
