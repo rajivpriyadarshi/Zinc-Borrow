@@ -437,6 +437,70 @@ body, html {
   visibility: visible;
   overflow: hidden;
 }
+
+/* Real 3D cube reveal — each tile has 6 faces on a preserve-3d transform stack.
+   The container has its own perspective at 50% 50%, so cubes near the edges
+   naturally show their inner sides (camera-at-center perspective).
+   Cubes at center look flat, cubes off-center reveal depth on the far side. */
+#liquid-root .scene-flowers .tile-reveal {
+  position: absolute;
+  inset: 0;
+  z-index: 25;
+  perspective: 900px;
+  perspective-origin: 50% 50%;
+  transform-style: preserve-3d;
+  pointer-events: none;
+}
+#liquid-root .scene-flowers .tile {
+  position: absolute;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+}
+#liquid-root .scene-flowers .tile__inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  /* No resting rotation — each cube's true orientation stays flat.
+     The perspective from the container is what makes off-center cubes
+     appear to show their sides. */
+}
+
+/* Face geometry. Solid opaque colors + hard 1px dark edges = crisp cube look. */
+#liquid-root .scene-flowers .tile__face {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border: 1px solid rgba(30, 20, 10, 0.55);
+}
+/* Flat cream color across all cube faces. Sides slightly darker so depth
+   reads when perspective reveals them. */
+#liquid-root .scene-flowers .tile__face--front {
+  background: #FDFBEE;
+  transform: translateZ(var(--d));
+}
+#liquid-root .scene-flowers .tile__face--back {
+  background: #FDFBEE;
+  transform: translateZ(calc(var(--d) * -1)) rotateY(180deg);
+}
+#liquid-root .scene-flowers .tile__face--right {
+  background: #F0EDD8;
+  transform: rotateY(90deg) translateZ(var(--half-w));
+}
+#liquid-root .scene-flowers .tile__face--left {
+  background: #F0EDD8;
+  transform: rotateY(-90deg) translateZ(var(--half-w));
+}
+#liquid-root .scene-flowers .tile__face--top {
+  background: #F7F4DF;
+  transform: rotateX(90deg) translateZ(var(--half-h));
+}
+#liquid-root .scene-flowers .tile__face--bottom {
+  background: #E6E2C4;
+  transform: rotateX(-90deg) translateZ(var(--half-h));
+}
 #liquid-root .scene-flowers .scene-flowers__canvas {
   position: absolute;
   inset: 0;
@@ -450,13 +514,15 @@ body, html {
 #liquid-root .scene-flowers .scene-flowers__top-separator {
   position: absolute;
   left: 0; right: 0; top: 0;
-  height: 40%;
+  height: 15%;
+  /* Match the second-fold section's white so the cubes fade cleanly into it */
   background: linear-gradient(180deg,
-    rgba(255,255,255,1) 0%,
-    rgba(255,255,255,0.85) 45%,
-    rgba(205, 226, 235, 0) 100%);
+    #ffffff 0%,
+    rgba(255, 255, 255, 0.9) 45%,
+    rgba(253, 251, 238, 0) 100%);
   pointer-events: none;
-  z-index: 2;
+  /* Above the cube grid (z-index 25) so it visually blends the top edge */
+  z-index: 26;
 }
 /* Bottom separator: fog/ground image that fades the video into whatever's below */
 #liquid-root .scene-flowers .scene-flowers__bottom-separator {
@@ -474,7 +540,7 @@ body, html {
 }
 @media (max-width: 768px) {
   #liquid-root .scene-flowers .scene-flowers__top-separator {
-    height: 45%;
+    height: 15%;
   }
 }
 

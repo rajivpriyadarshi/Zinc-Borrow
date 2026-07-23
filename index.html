@@ -6,7 +6,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ZincBorrow | Global Wealth</title>
   <link href="https://api.fontshare.com/v2/css?f[]=satoshi@900,700,500,300,400&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="style.css?v=91">
+  <link rel="stylesheet" href="style.css?v=101">
   <script>document.documentElement.classList.add('is-loading');</script>
 </head>
 
@@ -110,6 +110,8 @@
         <source media="(max-width: 768px)" srcset="assets/images/scene1-bottom-separator-mobile.webp">
         <img src="assets/images/scene1-bottom-separator.webp" alt="" loading="lazy">
       </picture>
+      <!-- Tile reveal grid — populated by JS -->
+      <div class="tile-reveal" id="sceneFlowersTiles" aria-hidden="true"></div>
     </div>
 
     <!-- Scenes 2-5: image-sequence canvases (unchanged) -->
@@ -619,6 +621,119 @@
           }
         }, startTime);
       }
+
+      // 3D cube reveal — real preserve-3d cubes that fly toward camera and
+      // clear as the user scrolls through scene 1's window on masterTl.
+      (function initCubeReveal() {
+        const container = document.getElementById('sceneFlowersTiles');
+        if (!container) return;
+        const isMobile = window.matchMedia('(max-width: 768px)').matches;
+        const cols = isMobile ? 5 : 8;
+        const rows = isMobile ? 7 : 5;
+        const total = cols * rows;
+
+        // Build cube DOM. Each tile has an inner rig + 6 faces.
+        const tiles = [];
+        const frag = document.createDocumentFragment();
+        for (let i = 0; i < total; i++) {
+          const el = document.createElement('div');
+          el.className = 'tile';
+          const inner = document.createElement('div');
+          inner.className = 'tile__inner';
+          ['front', 'back', 'right', 'left', 'top', 'bottom'].forEach((side) => {
+            const face = document.createElement('div');
+            face.className = 'tile__face tile__face--' + side;
+            inner.appendChild(face);
+          });
+          el.appendChild(inner);
+          frag.appendChild(el);
+          tiles.push(el);
+        }
+        container.appendChild(frag);
+
+        // Size + position tiles in pixel space so cube math is straightforward
+        function layout() {
+          const rect = container.getBoundingClientRect();
+          const tileW = rect.width / cols;
+          const tileH = rect.height / rows;
+          const depth = Math.min(tileW, tileH) * 0.8;
+          for (let i = 0; i < total; i++) {
+            const el = tiles[i];
+            const c = i % cols;
+            const r = Math.floor(i / cols);
+            el.style.width = tileW + 'px';
+            el.style.height = tileH + 'px';
+            el.style.left = (c * tileW) + 'px';
+            el.style.top = (r * tileH) + 'px';
+            // CSS custom props for face transforms
+            el.style.setProperty('--d', (depth / 2) + 'px');
+            el.style.setProperty('--half-w', (tileW / 2) + 'px');
+            el.style.setProperty('--half-h', (tileH / 2) + 'px');
+          }
+        }
+        layout();
+        window.addEventListener('resize', layout);
+
+        // Give each tile a stable random target so scrub is deterministic
+        function seedRand(seed) {
+          let s = seed;
+          return () => {
+            s = (s * 9301 + 49297) % 233280;
+            return s / 233280;
+          };
+        }
+        const rand = seedRand(1337);
+        const targets = tiles.map(() => ({
+          z: 400 + rand() * 900,      // fly forward this far
+          rx: (rand() - 0.5) * 60,    // tumble on X up to ±30°
+          ry: (rand() - 0.5) * 60,    // tumble on Y up to ±30°
+          x: (rand() - 0.5) * 200,    // slight lateral drift
+          y: (rand() - 0.5) * 200,
+          delay: rand()               // 0..1 — normalized position in the timeline
+        }));
+
+        // Initial state: cubes in place, facing the camera, no rotation
+        tiles.forEach((el, i) => {
+          gsap.set(el, {
+            transformOrigin: '50% 50%',
+            z: 0, rotationX: 0, rotationY: 0,
+            x: 0, y: 0, opacity: 1
+          });
+        });
+
+        // Scrub state: mapped to scene 1's window on masterTl (t=0 → t=3).
+        // We reserve the last ~0.4s of the scene for cubes to be fully gone,
+        // so cubes finish clearing before the tunnel-out to scene 2.
+        const CLEAR_BY = 2.6;
+        const state = { p: 0 };
+        masterTl.to(state, {
+          p: 1,
+          duration: CLEAR_BY,
+          ease: 'none',
+          onUpdate: () => {
+            const p = state.p;
+            for (let i = 0; i < total; i++) {
+              const t = targets[i];
+              // Each cube runs its own micro-timeline: it starts at t.delay*0.5
+              // (so first cubes leave early) and finishes at t.delay*0.5 + 0.5.
+              const start = t.delay * 0.5;
+              const end = start + 0.5;
+              let local = (p - start) / (end - start);
+              if (local < 0) local = 0;
+              if (local > 1) local = 1;
+              // Ease-in curve so cubes accelerate toward the camera
+              const eased = local * local;
+              const el = tiles[i];
+              el.style.transform =
+                'translate3d(' + (t.x * eased) + 'px,' + (t.y * eased) + 'px,' + (t.z * eased) + 'px) ' +
+                'rotateX(' + (t.rx * eased) + 'deg) ' +
+                'rotateY(' + (t.ry * eased) + 'deg)';
+              el.style.opacity = String(1 - eased);
+              el.style.visibility = local >= 1 ? 'hidden' : 'visible';
+            }
+          }
+        }, 0);
+      })();
 
       // Scene 1 heading: word-by-word fade + slide-up, fires when scene 1 pins.
       // Ken Burns: the whole heading gently scales 1.0 → 1.05 across the scrub.
